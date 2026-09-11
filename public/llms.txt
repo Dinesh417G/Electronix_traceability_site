@@ -1,0 +1,89 @@
+# ElectronIx Trace
+
+> Per-unit product traceability software for manufacturing plants. Built by
+> ElectronIx in Coimbatore, Tamil Nadu, India. On-premise, offline-first,
+> Rust and PostgreSQL. Quoted per plant, not per seat.
+
+## What it does
+
+ElectronIx Trace records what went into every unit a plant builds, what was done
+to it, who did it, on which machine, and what it measured. Scanning the code on
+the finished product returns that unit's complete, auditable history.
+
+The two queries it exists to answer:
+
+- Backward trace (unit to history): scan a returned unit and get its job card,
+  BOM revision, every component serial and lot consumed, every torque value,
+  every test reading, every operator, and any rework.
+- Forward trace (component or machine to units): given a bad supplier lot, or a
+  machine that drifted out of calibration between two times, list every finished
+  unit affected. This is the recall query and it is an indexed lookup.
+
+## Who it is for
+
+Indian MSME and mid-size discrete manufacturers: auto components and Tier 1/2
+suppliers, pumps and valves, switchgear and electrical panels, EV components,
+precision machining and export engineering, general line and batch assembly.
+Typically 50 to 500 people, under OEM or customer traceability requirements,
+priced out of enterprise MES suites.
+
+## Key characteristics
+
+- Offline-first: stations write every event to durable local storage before any
+  network call and replay idempotently. Internet is not required at any point.
+- A lapsed subscription never stops production capture. There is no enforcement
+  state in the software that halts capture; it restricts configuration changes
+  and cloud sync only.
+- Records are append-only with a per-unit SHA-256 hash chain. Corrections are new
+  rows that supersede old ones with a reason and an operator, never edits.
+- Raw device payloads are stored verbatim beside each parsed value.
+- Every limit is configuration: capture points hold min, max, nominal, sampling
+  rule and whether they are mandatory. Changing a torque window is not a release.
+- Routes are validated graphs with parallel branches, optional operations and
+  rework loops, guarded by eight gate types.
+- Labels: your own template, versioned with an effective date, rendered as native
+  ZPL II to TCP port 9100 with no OS print driver. Direct part marking with Data
+  Matrix and mark read-back for parts that go through wash, paint or heat.
+- Deployment: one edge box per plant running PostgreSQL 16 on hardware you own.
+  Signed over-the-air updates verify before download, apply atomically and roll
+  back automatically; the offline USB path uses identical verification.
+
+## What it is not
+
+- Not certified. No ISO 9001, IATF 16949, FDA or 21 CFR Part 11 certification for
+  the software or the company. It produces evidence for an audit; it does not
+  confer compliance.
+- Not an MES. No scheduling, OEE, downtime analysis, maintenance planning or work
+  instruction authoring.
+- No ERP connector. There is a documented seam for a work-order source and a
+  field to hold an external reference, but no built SAP, Oracle or Tally
+  integration.
+- Not a hosted cloud service today. The schema is multi-tenant; the hosted
+  multi-plant service is a later phase.
+- PostgreSQL only. MySQL is explicitly not supported.
+
+## Contact
+
+ElectronIx, Krishna Lay Out, D/No. 15, Idigarai Village, Idigarai PO,
+Coimbatore-22, Tamil Nadu, India.
+Phone and WhatsApp: +91 94882 33115
+Email: electronix.ies@gmail.com
+Founder and engineer: Dinesh Kumar G
+
+## Pages
+
+- /: overview, live demo, recall calculator, honest comparison, FAQ
+- /how-it-works: the six stages and what each captures
+- /demo: working backward trace and forward trace on a sample dataset
+- /pricing: what drives the price, quoted per plant
+- /features/: recall and forward trace, process data capture, part genealogy,
+  marking and labels, offline-first stations, audit and tamper evidence, route
+  configuration, deployment and updates
+- /industries/: auto components, pumps and valves, switchgear and electricals,
+  EV components, precision machining, general assembly
+- /vs/: honest comparisons with Siemens Opcenter, Sepasoft MES, DELMIAWorks,
+  iTAC, and local AIDC and barcode integrators
+- /resources/: technical writing on IATF audits, capturing torque data over
+  RS485, part genealogy records, laser marking versus labels, recall scope
+  planning, and choosing between MES and standalone traceability
+- /contact: book a 20-minute line walkthrough
