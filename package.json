@@ -2,7 +2,7 @@
   "name": "electronix-trace-web",
   "version": "1.0.0",
   "private": true,
-  "description": "Marketing website for ElectronIx Trace \u2014 product traceability for manufacturing plants.",
+  "description": "Marketing website for ElectronIx Trace — product traceability for manufacturing plants.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,8 +10,10 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "check": "npm run typecheck && npm run lint && npm run build",
-    "screenshots": "node scripts/screenshots.mjs"
+    "check": "npm run contrast && npm run typecheck && npm run lint && npm run build",
+    "screenshots": "node scripts/screenshots.mjs",
+    "contrast": "node scripts/contrast.mjs",
+    "hero-frames": "node scripts/hero-frames.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.58.0",

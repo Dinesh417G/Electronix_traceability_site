@@ -77,11 +77,13 @@ Deliberately **not** used, with reasons in `docs/DECISIONS.md`:
 ```
 app/                routes, sitemap.ts, robots.ts, opengraph-image.tsx, api/lead
 components/ui/      section, page-header, related, cta-band, faq, scroll-region
+components/         site-header, site-footer, logo, theme-toggle, lead-form
 components/sections/ hero-trace, stage-sequence, product-tour
 components/demo/    unit-record, demo-explorer, recall-calculator
 content/            features, industries, comparisons, resources, home
 lib/                site, routes, schema, seo, demo-data, lead-schema, analytics
 docs/               PRODUCT-FACTS, COMPETITORS, SEO-PLAN, DECISIONS, LOOP-LOG
+scripts/            contrast.mjs (colour gate), screenshots.mjs, hero-frames.mjs
 supabase/migrations 0001_trace_leads.sql — committed, NOT applied
 tests/              a11y, seo, journeys
 ```
@@ -95,10 +97,22 @@ discoverable**. Add a route there or it is invisible.
 ## Commands
 
 ```bash
-npm run check         # typecheck + lint + build
+npm run check         # contrast + typecheck + lint + build
+npm run contrast      # colour gate on its own, both themes
 npm run test:e2e      # 179 Playwright tests, desktop + Pixel 7 (build first)
-npm run screenshots   # 360/768/1440 + horizontal-overflow check
+npm run screenshots   # light and dark x 360/768/1440 + horizontal-overflow check
+npm run hero-frames   # scrub the hero loop to exact frames; proves it closes
 ```
+
+`screenshots` and `hero-frames` do NOT start a server — they expect one already
+on port 3100, and fail with `ERR_CONNECTION_REFUSED` if it is missing:
+
+```bash
+npm run build && npx next start -p 3100
+```
+
+`hero-frames` takes a theme argument (`node scripts/hero-frames.mjs dark`) and
+writes to `screenshots/hero/`. `/screenshots/` is gitignored.
 
 `test:e2e` starts its own server on port 3117 and **never reuses an existing
 one** — a long-lived `next start` from an earlier build silently turns the whole
@@ -122,12 +136,50 @@ fail inexplicably, check you are not serving a stale build.
   manager in Coimbatore who has been burned by software that promised integration
   and delivered a spreadsheet. Concede a limitation early — it buys belief.
 
+### Two themes, one set of role tokens
+
+Light is the default and is what a visitor gets unless they have chosen dark;
+the system preference is deliberately not consulted. Dark is opt-in via
+`:root[data-theme="dark"]`.
+
+The palette names are **roles**, which is the only reason two themes cost no
+utility-class churn: `graphite-*` appears only as `bg-`, `steel-*` and
+`line-050` only as `text-`. Redefining the variables per theme re-skins the
+site. Keep it that way — a `text-graphite-900` anywhere breaks the scheme.
+
+`signal` and `signal-solid` are a pair, and the distinction matters. Brand
+orange `#FF6B1A` on white is **2.87:1**, so it cannot be text in a light theme.
+`signal` is the accent wherever it is text or a meaningful border and darkens to
+`#9E3D0B` in light mode; `signal-solid` stays brand orange and is for fills —
+buttons, the logo dot, the laser — where the label reads against the orange
+rather than against the page.
+
+Theme application is an inline script in `<body>`, before paint, so a dark-theme
+visitor never sees a white flash. That mutates `<html>` before React hydrates,
+which is why the root element carries `suppressHydrationWarning` — it is scoped
+to that one element's attributes and must not be removed.
+
 ### Contrast is a gate, not a preference
 
-The steel scale (`#838C99` / `#9BA3AF` / `#BAC1CB`) was chosen because the
-original `steel-600 #5E6673` measured **2.85:1** and produced 61 AA failures.
-Lowest current ratio is 4.86:1. **Measure before changing any token** — the axe
-suite will catch it, but only if you run it.
+Run **`npm run contrast`**. It measures all 98 foreground/background pairs both
+themes can produce and exits non-zero on any failure; `npm run check` runs it
+first. Do not adjust a colour token without it.
+
+It models what the CSS actually paints, not just the plain surfaces — including
+the chip tints, where the accent sits on a 10% wash of *itself*. That case is
+why `signal` is `#9E3D0B` and not the lighter orange it started as: axe caught
+`.chip-signal` at 4.14:1 after the first version of the gate had passed it.
+
+Two things it fixed that predate the light theme:
+
+- `--rule-strong` was `color-mix(steel-500 32%, transparent)`, which flattened
+  to **2.6-2.9:1** on panels in the dark theme. It draws form-input and
+  secondary-button borders, so it owes 3:1 under WCAG 1.4.11. It is now opaque
+  and per-theme. The axe suite never caught this because axe has no rule for
+  input borders — passing axe is not the same as passing 1.4.11.
+- The steel scale's original `#5E6673` measured 2.85:1 and produced 61 AA
+  failures. Lowest ratio across both themes is now 3.02:1 for borders and
+  4.46:1 for text.
 
 ---
 
@@ -139,7 +191,20 @@ suite will catch it, but only if you run it.
   page sideways. This cost 240px of horizontal overflow at 360px.
 - **Reduced motion must zero `animation-delay`, not just duration.** Collapsing
   duration alone leaves a staged sequence waiting out its delays — the hero sat
-  half-drawn for two seconds.
+  half-drawn for two seconds. That global rule still applies everywhere except
+  the hero, which now opts out of it entirely (see below).
+- **Elements in the hero that correctly rest at opacity 0 carry
+  `data-transient`.** The beam, scan line, sparks, firing indicator and decode
+  flash are machine states, not content. `tests/a11y.spec.ts` uses the attribute
+  to tell "correctly off" from "stranded mid-animation" — without it, a laser
+  left lit after marking would be the only way to pass the test.
+- **Never put a responsive `hidden` on an element that also has `.btn`.** `.btn`
+  sets `display: inline-flex` and is declared after Tailwind's utilities, so it
+  wins on the same element and the thing never hides. Put the `hidden lg:block`
+  on a wrapper. This shipped the desktop CTA into the 360px header.
+- **A CSS comment cannot contain `*/`.** Writing `steel-*/line-050` in a comment
+  in `globals.css` closed it early and took the rest of the token block with it.
+  Turbopack reported it as a dangling combinator 400 lines further down.
 - **`lib/demo-data.ts` must stay deterministic.** It uses a seeded LCG so server
   and client render identically. Never introduce `Math.random()` or `Date.now()`
   there.
@@ -150,6 +215,49 @@ suite will catch it, but only if you run it.
   keyboard user cannot reach its right-hand columns.
 
 ---
+
+## The hero is a loop, and that constrains it
+
+`components/sections/hero-trace.tsx` plus the `st-*` keyframes in `globals.css`
+are one marking station running a 13s cycle: part indexes in, hold-down shuts,
+head feeds down its Z axis, galvo rasters the code row by row, head parks, the
+DPM reader lights and grades the mark, the record writes itself out of that
+read, holds, then clears as the part indexes out.
+
+Four rules, each of which was learned by breaking it:
+
+1. **One master timeline, no `animation-delay` for sequencing.** Every animated
+   node carries `.station-anim` — 13s, linear, infinite — and puts its phase in
+   its own keyframe percentages. A delay applies *only to the first iteration*,
+   so the delay-chained version this replaced ran once and then fired
+   everything at once forever. The percentages are generated, not hand-counted.
+
+2. **Every cycle must end where it starts,** or the loop visibly rewinds. Any
+   repositioning happens while the element is at opacity 0. `npm run hero-frames`
+   asserts this: it compares frame *t* against frame *t + 13000ms* and fails on
+   any difference.
+
+3. **Reduced motion is a separate path, not a squashed one.** The global
+   override lands a one-shot on its final frame — but a loop's final frame is
+   the empty stage before the next part. So `.station-anim` sets
+   `animation: none !important` under reduced motion, and every element's BASE
+   attributes are the finished diagram. If you add an element, set its static
+   attributes to how it should look at rest, then animate away from that.
+
+4. **`animation-delay: -8000ms` is load-time framing, not sequencing.** A
+   negative delay seeks into the timeline instead of postponing it, so the page
+   opens on the completed record rather than on six seconds of empty right-hand
+   column. Every element shares the offset, so the cycle stays in sync.
+
+Two things that make the station read as a machine rather than a diagram, worth
+preserving: the part lies down (a Z axis is above the surface it writes to), and
+the reader is a separate canted device (a verifier aimed square at a specular
+machined surface reads its own reflection).
+
+Scale discipline matters more than detail here. A rotating toggle clamp was
+tried and read as a diagonal slash across the workpiece at 200px wide; a linear
+hold-down reads instantly. Add a part, look at `npm run hero-frames` output, and
+delete it if it becomes noise.
 
 ## Validation status
 
@@ -184,3 +292,13 @@ three remaining options are in `docs/LOOP-LOG.md`. Do not claim this gate passes
    and JSON-LD all derive from it).
 3. Apply `supabase/migrations/0001_trace_leads.sql` before pointing production at
    a project. Until then the lead route logs instead of storing.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

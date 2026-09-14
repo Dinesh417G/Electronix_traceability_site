@@ -1,11 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Geist, JetBrains_Mono } from "next/font/google";
 import { site } from "@/lib/site";
-import { graph, organizationSchema, localBusinessSchema, softwareApplicationSchema } from "@/lib/schema";
+import {
+  graph,
+  organizationSchema,
+  localBusinessSchema,
+  softwareApplicationSchema,
+} from "@/lib/schema";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { MotionRoot } from "@/components/motion/motion-root";
 import { Analytics } from "@/components/analytics";
+import { themeInitScript } from "@/components/theme-toggle";
 import "./globals.css";
 
 // Only the display face is preloaded: it renders the h1, which is the largest
@@ -60,16 +66,30 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0e1013",
-  colorScheme: "dark",
+  // Light is the default theme, so that is what the browser chrome matches on
+  // first paint. The toggle rewrites this meta tag when the visitor switches.
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
+    // suppressHydrationWarning is required here, and it is scoped to this one
+    // element's own attributes — it does not silence anything in the tree below.
+    // The inline theme script in <body> runs before React hydrates and stamps
+    // data-theme onto <html>, so the server markup and the live DOM differ by
+    // exactly that attribute, deliberately. Without this, React reports a
+    // hydration mismatch on every page load for anyone using the dark theme.
+    <html
+      lang="en-IN"
+      suppressHydrationWarning
+      className={`${display.variable} ${sans.variable} ${mono.variable}`}
+    >
       <body className="min-h-dvh antialiased">
+        {/* First thing in the document, before any painted markup: applies a
+            remembered dark choice so it never flashes light first. */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

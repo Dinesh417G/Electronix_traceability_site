@@ -186,18 +186,18 @@ function ParameterTrend() {
         <p className="data text-xs text-steel-600">limits 10.0 – 14.0 Nm, nominal 12.0</p>
       </div>
       <svg viewBox={`0 0 ${w} ${h}`} className="h-auto w-full" role="img" aria-label="Torque readings for sixteen consecutive units, two below the lower limit of ten newton metres">
-        <rect x="0" y={y(14)} width={w} height={y(10) - y(14)} fill="#2ED47A" opacity="0.07" />
-        <line x1="0" y1={y(14)} x2={w} y2={y(14)} stroke="#2ED47A" strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
-        <line x1="0" y1={y(10)} x2={w} y2={y(10)} stroke="#2ED47A" strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
-        <line x1="0" y1={y(12)} x2={w} y2={y(12)} stroke="#838C99" strokeWidth="1" strokeDasharray="2 6" />
-        <path d={path} fill="none" stroke="#9BA3AF" strokeWidth="1.5" />
+        <rect x="0" y={y(14)} width={w} height={y(10) - y(14)} fill="var(--color-verify)" opacity="0.07" />
+        <line x1="0" y1={y(14)} x2={w} y2={y(14)} stroke="var(--color-verify)" strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
+        <line x1="0" y1={y(10)} x2={w} y2={y(10)} stroke="var(--color-verify)" strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
+        <line x1="0" y1={y(12)} x2={w} y2={y(12)} stroke="var(--color-steel-600)" strokeWidth="1" strokeDasharray="2 6" />
+        <path d={path} fill="none" stroke="var(--color-steel-500)" strokeWidth="1.5" />
         {values.map((v, i) => (
           <circle
             key={i}
             cx={i * step}
             cy={y(v)}
             r="3.5"
-            fill={v < 10 || v > 14 ? "#FF4D4D" : "#F2F4F7"}
+            fill={v < 10 || v > 14 ? "var(--color-reject)" : "var(--color-line-050)"}
           />
         ))}
       </svg>

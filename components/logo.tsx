@@ -22,13 +22,13 @@ function OrbitMark() {
       aria-hidden="true"
       className="shrink-0"
     >
-      <ellipse cx="12" cy="12" rx="10.2" ry="4.4" stroke="#9BA3AF" strokeWidth="1.1" />
+      <ellipse cx="12" cy="12" rx="10.2" ry="4.4" stroke="var(--color-steel-500)" strokeWidth="1.1" />
       <ellipse
         cx="12"
         cy="12"
         rx="10.2"
         ry="4.4"
-        stroke="#9BA3AF"
+        stroke="var(--color-steel-500)"
         strokeWidth="1.1"
         transform="rotate(60 12 12)"
       />
@@ -37,11 +37,11 @@ function OrbitMark() {
         cy="12"
         rx="10.2"
         ry="4.4"
-        stroke="#9BA3AF"
+        stroke="var(--color-steel-500)"
         strokeWidth="1.1"
         transform="rotate(120 12 12)"
       />
-      <circle cx="12" cy="12" r="2.6" fill="#FF6B1A" />
+      <circle cx="12" cy="12" r="2.6" fill="var(--color-signal-solid)" />
     </svg>
   );
 }
