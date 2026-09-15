@@ -39,7 +39,12 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  if (!user && pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  // Reaching these without a session is the whole point of them: the sign-in
+  // form, the reset request, and the page the emailed link lands on, which is
+  // what creates the session in the first place.
+  const PUBLIC = ["/admin/login", "/admin/forgot-password", "/admin/auth-callback"];
+
+  if (!user && pathname.startsWith("/admin") && !PUBLIC.includes(pathname)) {
     const to = request.nextUrl.clone();
     to.pathname = "/admin/login";
     to.search = "";

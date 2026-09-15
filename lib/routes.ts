@@ -29,6 +29,8 @@ const staticRoutes: RouteEntry[] = [
   // site serves, and marked non-indexable so robots.txt disallows both.
   { path: "/admin", changeFrequency: "daily", priority: 0.0, indexable: false },
   { path: "/admin/login", changeFrequency: "yearly", priority: 0.0, indexable: false },
+  { path: "/admin/forgot-password", changeFrequency: "yearly", priority: 0.0, indexable: false },
+  { path: "/admin/reset-password", changeFrequency: "yearly", priority: 0.0, indexable: false },
 ];
 
 export function allRoutes(): RouteEntry[] {
