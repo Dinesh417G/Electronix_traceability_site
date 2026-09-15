@@ -14,3 +14,5 @@ next-env.d.ts
 /playwright/.cache/
 /.lighthouseci/
 /screenshots/
+.vercel
+.env*
