@@ -79,7 +79,7 @@ export default async function FeaturePage({ params }: { params: Promise<{ slug: 
           <aside className="lg:pt-8">
             <div className="panel sticky top-28 p-6">
               <h2 className="data text-[0.6875rem] tracking-wide text-steel-600">
-                AT A GLANCE
+                At a glance
               </h2>
               <dl className="mt-4 space-y-3">
                 {feature.facts.map((f, i) => (

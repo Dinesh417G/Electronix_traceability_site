@@ -102,7 +102,7 @@ export function LeadForm({ sourcePage }: { sourcePage: string }) {
 
   return (
     <form onSubmit={onSubmit} noValidate className="panel p-6 md:p-8">
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-x-5 gap-y-6 sm:grid-cols-2">
         <Field name="name" label="Your name" required error={errors.name} autoComplete="name" />
         <Field
           name="company"
@@ -132,12 +132,13 @@ export function LeadForm({ sourcePage }: { sourcePage: string }) {
           name="industry"
           label="What do you make"
           error={errors.industry}
-          placeholder="Pumps, panels, auto components"
+          placeholder="Pumps, panels, castings"
         />
         <Field
           name="line_count"
           label="How many lines"
           error={errors.line_count}
+          inputMode="numeric"
           placeholder="1"
         />
         <Field
@@ -156,7 +157,7 @@ export function LeadForm({ sourcePage }: { sourcePage: string }) {
           id="message"
           name="message"
           rows={4}
-          className="w-full border border-[var(--rule-strong)] bg-graphite-950 px-3.5 py-3 text-sm text-line-050 placeholder:text-steel-600"
+          className="field"
           placeholder="Customer audit, a warranty claim, a new OEM programme…"
         />
       </div>
@@ -196,6 +197,7 @@ function Field({
   error,
   placeholder,
   autoComplete,
+  inputMode,
 }: {
   name: string;
   label: string;
@@ -204,10 +206,13 @@ function Field({
   error?: string;
   placeholder?: string;
   autoComplete?: string;
+  inputMode?: "numeric";
 }) {
   const errId = `${name}-error`;
   return (
-    <div>
+    // flex column plus mt-auto on the input, so a label that wraps to two
+    // lines drops only its own label — both inputs on the row stay on one line.
+    <div className="flex flex-col">
       <label htmlFor={name} className="mb-2 block text-sm text-steel-400">
         {label}
         {!required && <span className="text-steel-600"> (optional)</span>}
@@ -219,10 +224,9 @@ function Field({
         {...(required ? { required: true } : {})}
         {...(placeholder ? { placeholder } : {})}
         {...(autoComplete ? { autoComplete } : {})}
+        {...(inputMode ? { inputMode } : {})}
         {...(error ? { "aria-invalid": true as const, "aria-describedby": errId } : {})}
-        className={`w-full border bg-graphite-950 px-3.5 py-3 text-sm text-line-050 placeholder:text-steel-600 ${
-          error ? "border-reject" : "border-[var(--rule-strong)]"
-        }`}
+        className="field mt-auto"
       />
       {error && (
         <p id={errId} className="mt-1.5 text-xs verdict-fail">

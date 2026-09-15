@@ -20,7 +20,13 @@ export function ProductTour() {
 
   return (
     <div>
-      <div role="tablist" aria-label="Product screens" className="flex flex-wrap gap-2">
+      {/* A rule the tabs sit on, rather than six identical bordered boxes.
+          The selected tab thickens its own segment of that rule. */}
+      <div
+        role="tablist"
+        aria-label="Product screens"
+        className="flex flex-wrap gap-x-1 border-b border-[var(--rule)]"
+      >
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -30,10 +36,10 @@ export function ProductTour() {
             aria-selected={tab === t.id}
             aria-controls={`panel-${t.id}`}
             onClick={() => setTab(t.id)}
-            className={`border px-3.5 py-2.5 text-sm transition-colors ${
+            className={`-mb-px min-h-11 border-b-2 px-3 text-sm transition-colors ${
               tab === t.id
-                ? "border-signal bg-graphite-800 text-line-050"
-                : "border-[var(--rule)] text-steel-400 hover:text-line-050"
+                ? "border-signal text-line-050"
+                : "border-transparent text-steel-400 hover:border-[var(--rule-strong)] hover:text-line-050"
             }`}
           >
             {t.label}
@@ -88,7 +94,7 @@ function UnitSearch() {
   return (
     <div className="grid gap-5 md:grid-cols-[1fr_1.4fr]">
       <div className="panel-inset p-4">
-        <p className="data text-[0.625rem] text-steel-600">SCAN OR SEARCH</p>
+        <p className="data text-[0.625rem] text-steel-600">Scan or search</p>
         <div className="data mt-2 border border-[var(--rule-strong)] bg-graphite-950 px-3 py-2.5 text-sm">
           {u.serial}
         </div>
@@ -107,7 +113,7 @@ function UnitSearch() {
         </dl>
       </div>
       <div className="panel-inset p-4">
-        <p className="data text-[0.625rem] text-steel-600">CAPTURED VALUES</p>
+        <p className="data text-[0.625rem] text-steel-600">Captured values</p>
         <ul className="mt-3 space-y-2">
           {u.measurements.map((m) => (
             <li key={m.point} className="flex items-center justify-between gap-3 text-xs">
@@ -175,9 +181,18 @@ function ParameterTrend() {
   const max = 15;
   const h = 140;
   const w = 560;
-  const step = w / (values.length - 1);
-  const y = (v: number) => h - ((v - min) / (max - min)) * h;
-  const path = values.map((v, i) => `${i === 0 ? "M" : "L"}${i * step},${y(v)}`).join(" ");
+  /* An inset at both ends and top so the first and last markers, and any
+     marker riding a limit line, sit inside the frame rather than being
+     halved by it. */
+  const padL = 10;
+  const padR = 10;
+  const padY = 10;
+  const plotW = w - padL - padR;
+  const plotH = h - padY * 2;
+  const step = plotW / (values.length - 1);
+  const x = (i: number) => padL + i * step;
+  const y = (v: number) => padY + plotH - ((v - min) / (max - min)) * plotH;
+  const path = values.map((v, i) => `${i === 0 ? "M" : "L"}${x(i)},${y(v)}`).join(" ");
 
   return (
     <div>
@@ -185,19 +200,61 @@ function ParameterTrend() {
         <p className="data text-xs text-steel-400">final_torque · EX-VLV-2200 rev A</p>
         <p className="data text-xs text-steel-600">limits 10.0 – 14.0 Nm, nominal 12.0</p>
       </div>
-      <svg viewBox={`0 0 ${w} ${h}`} className="h-auto w-full" role="img" aria-label="Torque readings for sixteen consecutive units, two below the lower limit of ten newton metres">
-        <rect x="0" y={y(14)} width={w} height={y(10) - y(14)} fill="var(--color-verify)" opacity="0.07" />
-        <line x1="0" y1={y(14)} x2={w} y2={y(14)} stroke="var(--color-verify)" strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
-        <line x1="0" y1={y(10)} x2={w} y2={y(10)} stroke="var(--color-verify)" strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
-        <line x1="0" y1={y(12)} x2={w} y2={y(12)} stroke="var(--color-steel-600)" strokeWidth="1" strokeDasharray="2 6" />
-        <path d={path} fill="none" stroke="var(--color-steel-500)" strokeWidth="1.5" />
+      {/* The viewBox scales to the container, so plain strokes and radii render
+          at whatever the scale factor happens to be — at desktop width that was
+          about 2x, which turned 1.5px rules into 3px and the markers into blobs.
+          vectorEffect pins the rules; the markers are zero-length round-capped
+          lines, so their stroke width IS their diameter and it pins too.
+
+          That also buys preserveAspectRatio="none": an explicit height keeps the
+          plot from collapsing to 70px on a phone, and the uneven x/y scale it
+          implies is invisible, because non-scaling strokes have no aspect to
+          distort and a round cap stays round where a <circle> would go oval. */}
+      <svg
+        viewBox={`0 0 ${w} ${h}`}
+        preserveAspectRatio="none"
+        className="h-[150px] w-full md:h-[210px]"
+        role="img"
+        aria-label="Torque readings for sixteen consecutive units, two below the lower limit of ten newton metres"
+      >
+        <rect x={padL} y={y(14)} width={plotW} height={y(10) - y(14)} fill="var(--color-verify)" opacity="0.07" />
+        {[
+          { v: 14, colour: "var(--color-verify)", dash: "4 4", op: 0.5 },
+          { v: 12, colour: "var(--color-steel-600)", dash: "2 6", op: 1 },
+          { v: 10, colour: "var(--color-verify)", dash: "4 4", op: 0.5 },
+        ].map(({ v, colour, dash, op }) => (
+          <line
+            key={v}
+            x1={padL}
+            y1={y(v)}
+            x2={w - padR}
+            y2={y(v)}
+            stroke={colour}
+            strokeWidth="1"
+            strokeDasharray={dash}
+            opacity={op}
+            vectorEffect="non-scaling-stroke"
+          />
+        ))}
+        <path
+          d={path}
+          fill="none"
+          stroke="var(--color-steel-500)"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        />
         {values.map((v, i) => (
-          <circle
+          <line
             key={i}
-            cx={i * step}
-            cy={y(v)}
-            r="3.5"
-            fill={v < 10 || v > 14 ? "var(--color-reject)" : "var(--color-line-050)"}
+            x1={x(i)}
+            y1={y(v)}
+            x2={x(i)}
+            y2={y(v)}
+            strokeLinecap="round"
+            strokeWidth="7"
+            vectorEffect="non-scaling-stroke"
+            stroke={v < 10 || v > 14 ? "var(--color-reject)" : "var(--color-line-050)"}
           />
         ))}
       </svg>

@@ -70,7 +70,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
       <section className="shell">
         <div className="panel p-6 md:p-8">
           <h2 className="data text-[0.6875rem] tracking-wide text-signal">
-            THE SITUATION THIS IS FOR
+            The situation this is for
           </h2>
           <p className="prose-measure mt-4 text-base leading-relaxed text-line-050">
             {industry.scenario}

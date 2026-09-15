@@ -59,7 +59,7 @@ export default function DemoPage() {
       <section className="shell mt-16">
         <div className="panel-inset p-6">
           <h2 className="data text-[0.6875rem] tracking-wide text-steel-600">
-            ABOUT THIS DATASET
+            About this dataset
           </h2>
           <p className="prose-measure mt-3 text-sm leading-relaxed text-steel-400">
             {demoUnits.length} units across 3 job cards and 8 component lots, built on the

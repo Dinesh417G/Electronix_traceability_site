@@ -47,7 +47,7 @@ export function DemoExplorer({ initial }: { initial: DemoUnit }) {
               spellCheck={false}
               aria-describedby={error ? "unit-search-error" : "unit-search-help"}
               {...(error ? { "aria-invalid": true as const } : {})}
-              className="data w-full border border-[var(--rule-strong)] bg-graphite-950 px-3.5 py-3 text-line-050 placeholder:text-steel-600"
+              className="data field"
             />
           </div>
           <button type="submit" className="btn btn-primary self-end max-sm:w-full">
@@ -67,7 +67,7 @@ export function DemoExplorer({ initial }: { initial: DemoUnit }) {
 
         <div className="mt-5">
           <p className="data mb-2.5 text-[0.625rem] tracking-wide text-steel-600">
-            SAMPLE UNITS
+            Sample units
           </p>
           <div className="flex flex-wrap gap-2">
             {SAMPLES.map((u) => (

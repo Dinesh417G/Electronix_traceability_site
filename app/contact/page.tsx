@@ -45,7 +45,7 @@ export default function ContactPage() {
           <div>
             <div className="panel p-6">
               <h2 className="data text-[0.6875rem] tracking-wide text-steel-600">
-                DIRECT
+                Direct
               </h2>
               <dl className="mt-4 space-y-4">
                 <div className="border-t border-[var(--rule)] pt-4">
@@ -90,7 +90,7 @@ export default function ContactPage() {
 
             <div className="panel-inset mt-6 p-6">
               <h2 className="data text-[0.6875rem] tracking-wide text-steel-600">
-                WHAT TO EXPECT
+                What to expect
               </h2>
               <ol className="mt-4 space-y-3">
                 {EXPECT.map((e, i) => (

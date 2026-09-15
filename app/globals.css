@@ -297,6 +297,41 @@ h4 {
   color: var(--color-line-050);
 }
 
+/* --- Form controls -------------------------------------------------------- */
+
+/* One definition for every text control. The border owes 3:1 as a control
+   boundary under WCAG 1.4.11, which is why it is --rule-strong and not --rule;
+   see the note on that token above. */
+.field {
+  width: 100%;
+  background: var(--color-graphite-950);
+  border: 1px solid var(--rule-strong);
+  padding: 0.6875rem 0.875rem;
+  /* 16px, not 14px: iOS Safari zooms the whole page when a focused control is
+     under 16px, which throws a phone visitor out of the form layout. */
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--color-line-050);
+  transition: border-color 140ms ease;
+}
+
+.field::placeholder {
+  color: var(--color-steel-600);
+}
+
+.field:hover {
+  border-color: var(--color-steel-400);
+}
+
+.field[aria-invalid="true"] {
+  border-color: var(--color-reject);
+}
+
+textarea.field {
+  resize: vertical;
+  min-height: 7rem;
+}
+
 /* --- Tables --------------------------------------------------------------- */
 
 .table-scroll {

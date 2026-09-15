@@ -29,7 +29,7 @@ export default function ThankYouPage() {
 
         <div className="panel mt-10 p-6">
           <h2 className="data text-[0.6875rem] tracking-wide text-steel-600">
-            WHILE YOU WAIT
+            While you wait
           </h2>
           <ul className="mt-4 space-y-3">
             <li>

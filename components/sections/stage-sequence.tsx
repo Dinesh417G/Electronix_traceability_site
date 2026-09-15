@@ -52,7 +52,7 @@ export function StageSequence() {
           ))}
           <li className="mt-6 border-l-2 border-[var(--rule)] py-2 pl-4">
             <span className="data text-[0.625rem] tracking-wide text-steel-600">
-              PAYLOAD SO FAR
+              Payload so far
             </span>
             <span className="data mt-1.5 block text-2xl text-signal">
               {cumulative(active)}
@@ -85,7 +85,7 @@ export function StageSequence() {
             </p>
             <div className="mt-5">
               <p className="data mb-2.5 text-[0.625rem] tracking-wide text-steel-600">
-                CAPTURED HERE
+                Captured here
               </p>
               <ul className="flex flex-wrap gap-2">
                 {s.captured.map((c) => (

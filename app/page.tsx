@@ -286,12 +286,22 @@ export default function HomePage() {
         title="What the first month looks like"
         lede="One line first. If the record it produces is not what you wanted, you have spent three weeks, not a year."
       >
-        <ol className="grid gap-px bg-[var(--rule)] md:grid-cols-2 lg:grid-cols-4">
+        {/* Subgrid at lg so all four cards share one set of row tracks: the
+            "From you" rules then land on a single line instead of each one
+            tracking its own column's body length. Below lg the cards stack or
+            pair, where flex column plus flex-1 is enough. */}
+        <ol className="grid gap-px bg-[var(--rule)] md:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[auto_auto_1fr_auto]">
           {rollout.map((r) => (
-            <li key={r.phase} className="reveal bg-graphite-950 p-6">
+            <li
+              key={r.phase}
+              className="reveal flex flex-col bg-graphite-950 p-6 lg:row-span-4 lg:grid lg:grid-rows-subgrid"
+            >
               <p className="data text-xs text-signal">{r.phase}</p>
               <h3 className="mt-2 text-base">{r.title}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-steel-400">{r.body}</p>
+              {/* flex-1 lets the shortest body absorb the slack, so the four
+                  rules below land on one line instead of each tracking its own
+                  column's text length. mt-4 survives as the minimum gap. */}
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-steel-400">{r.body}</p>
               <p className="mt-4 border-t border-[var(--rule)] pt-3 text-xs leading-relaxed text-steel-500">
                 <span className="text-steel-600">From you: </span>
                 {r.fromYou}
@@ -326,7 +336,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="panel p-6">
-            <h3 className="data text-xs tracking-wide text-steel-600">ENGINEERING FACTS</h3>
+            <h3 className="data text-xs tracking-wide text-steel-600">Engineering facts</h3>
             <dl className="mt-4 space-y-3 text-sm">
               {[
                 ["Backend", "Rust, no unsafe code anywhere"],
@@ -374,7 +384,7 @@ export default function HomePage() {
             </div>
             <div className="mt-10 border-t border-[var(--rule)] pt-6">
               <p className="data text-[0.625rem] tracking-wide text-steel-600">
-                START HERE INSTEAD
+                Start here instead
               </p>
               <ul className="mt-3 space-y-2">
                 {features.slice(0, 3).map((f) => (
