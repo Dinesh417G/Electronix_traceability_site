@@ -86,7 +86,18 @@ export async function POST(request: Request) {
   };
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  /*
+   * Insert-only, so the publishable key is enough and is what we prefer: a
+   * service role key bypasses row level security on every table in the
+   * project, and this project also holds the ElectronIx DNC site's enquiries.
+   * A marketing site does not need that blast radius to append one row.
+   *
+   * The service role key stays supported as a fallback. Setting it is what
+   * would let the anon insert policy be dropped, so that trace_leads could
+   * only be written through this route -- see supabase/migrations.
+   */
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (url && key) {
     try {
