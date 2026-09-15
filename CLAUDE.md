@@ -49,9 +49,23 @@ PostgreSQL, offline-first, on-premise.
   repository's **only branch and its default**. No PR exists because a PR needs a
   base different from the head. To open one, create `main` from this branch on
   GitHub first.
-- **Not deployed.** No Vercel project, no DNS, no Supabase migration applied.
-  `docs/DECISIONS.md` D-007.
-- 34 routes, all static except `/api/lead`.
+- **Deployed** since 2026-09-15 to `https://electronix-trace-site.vercel.app`
+  (Vercel project `electronix-trace-site`, team `dinesh417gs-projects`). This
+  supersedes `docs/DECISIONS.md` D-007, which still says otherwise. No custom
+  DNS yet — `NEXT_PUBLIC_SITE_URL` points at the vercel.app address, and
+  canonicals, sitemap, OG images and JSON-LD all follow from it.
+- **Leads are stored.** `supabase/migrations/` 0001-0003 are applied to the
+  Supabase project `kowotmvjnbapegdxytxl`, which is the ElectronIx DNC site's
+  project and is now the shared hub for both products' enquiries. Trace writes
+  `trace_leads`, DNC keeps `quote_requests`, and the `customer_requests` view
+  unions them with a `product` column naming each.
+- Static marketing routes plus `/api/lead`, `/api/lead/verify` and a staff-only
+  `/admin` area (sign-in, enquiries inbox, password reset), all `noindex` and
+  disallowed in `robots.txt`.
+- **`later.md` at the repo root lists what still needs the owner** — two API
+  keys and one Supabase redirect-allowlist entry. Until they are set, double
+  opt-in and password-reset links are off, and the site degrades to "stored and
+  owner alerted immediately" rather than failing. Keep it current.
 
 ---
 
