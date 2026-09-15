@@ -89,16 +89,17 @@ Deliberately **not** used, with reasons in `docs/DECISIONS.md`:
 ## Layout
 
 ```
-app/                routes, sitemap.ts, robots.ts, opengraph-image.tsx, api/lead
+app/                routes, sitemap.ts, robots.ts, opengraph-image.tsx, api/, admin/
 components/ui/      section, page-header, related, cta-band, faq, scroll-region
 components/         site-header, site-footer, logo, theme-toggle, lead-form
 components/sections/ hero-trace, stage-sequence, product-tour
 components/demo/    unit-record, demo-explorer, recall-calculator
 content/            features, industries, comparisons, resources, home
-lib/                site, routes, schema, seo, demo-data, lead-schema, analytics
+lib/                site, routes, schema, seo, demo-data, lead-schema, analytics,
+                    auth (the DAL), email, supabase/server
 docs/               PRODUCT-FACTS, COMPETITORS, SEO-PLAN, DECISIONS, LOOP-LOG
 scripts/            contrast.mjs (colour gate), screenshots.mjs, hero-frames.mjs
-supabase/migrations 0001_trace_leads.sql — committed, NOT applied
+supabase/migrations 0001-0003 — applied to kowotmvjnbapegdxytxl
 tests/              a11y, seo, journeys
 ```
 
