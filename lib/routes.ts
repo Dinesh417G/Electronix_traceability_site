@@ -25,6 +25,10 @@ const staticRoutes: RouteEntry[] = [
   { path: "/privacy", changeFrequency: "yearly", priority: 0.2, indexable: true },
   { path: "/terms", changeFrequency: "yearly", priority: 0.2, indexable: true },
   { path: "/thank-you", changeFrequency: "yearly", priority: 0.1, indexable: false },
+  // Staff only. Listed so the manifest stays the whole truth about what the
+  // site serves, and marked non-indexable so robots.txt disallows both.
+  { path: "/admin", changeFrequency: "daily", priority: 0.0, indexable: false },
+  { path: "/admin/login", changeFrequency: "yearly", priority: 0.0, indexable: false },
 ];
 
 export function allRoutes(): RouteEntry[] {

@@ -10,14 +10,50 @@ export const metadata: Metadata = pageMetadata({
   noIndex: true,
 });
 
-export default function ThankYouPage() {
+/* The confirmation link lands back here. Each state is written so it is
+   truthful on its own -- "already confirmed" is not an error, and an expired
+   or reused link must not imply the enquiry was lost. */
+const CONFIRM_STATES: Record<string, { heading: string; body: string }> = {
+  ok: {
+    heading: "Email confirmed. We have your enquiry.",
+    body: "Your address is confirmed and your enquiry is now in front of us.",
+  },
+  already: {
+    heading: "That was already confirmed.",
+    body: "Nothing more to do — this address was confirmed earlier and your enquiry is with us.",
+  },
+  invalid: {
+    heading: "That confirmation link did not work.",
+    body: "It may have expired or already been used. Your enquiry still reached us, so there is nothing you need to resend.",
+  },
+  unavailable: {
+    heading: "We could not confirm that just now.",
+    body: "Your enquiry still reached us and we will reply either way.",
+  },
+};
+
+export default async function ThankYouPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ confirm?: string }>;
+}) {
+  const { confirm } = await searchParams;
+  const state = confirm ? CONFIRM_STATES[confirm] : undefined;
+
   return (
     <div className="shell py-20 md:py-28">
       <div className="max-w-2xl">
-        <p className="section-index mb-5">Enquiry received</p>
+        <p className="section-index mb-5">
+          {state ? "Email confirmation" : "Enquiry received"}
+        </p>
         <h1 className="text-[2rem] leading-tight md:text-[2.75rem]">
-          That reached us. We will reply today.
+          {state ? state.heading : "That reached us. We will reply today."}
         </h1>
+        {state && (
+          <p className="prose-measure mt-6 text-base leading-relaxed text-line-050">
+            {state.body}
+          </p>
+        )}
         <p className="prose-measure mt-6 text-base leading-relaxed text-steel-400">
           Replies come from Coimbatore, usually within a few hours on a working day. If it is
           urgent, calling is faster than waiting for an email —{" "}

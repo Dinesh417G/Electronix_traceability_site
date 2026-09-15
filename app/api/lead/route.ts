@@ -1,7 +1,9 @@
+import { randomBytes, createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { leadSchema } from "@/lib/lead-schema";
 import { site } from "@/lib/site";
+import { sendEmail, verificationEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -99,10 +101,17 @@ export async function POST(request: Request) {
   const key =
     process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+  // The raw token goes in the emailed link and nowhere else; only its hash is
+  // stored, so a leaked row cannot be used to confirm somebody else's address.
+  const token = randomBytes(32).toString("base64url");
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+
   if (url && key) {
     try {
       const supabase = createClient(url, key, { auth: { persistSession: false } });
-      const { error } = await supabase.from("trace_leads").insert(row);
+      const { error } = await supabase
+        .from("trace_leads")
+        .insert({ ...row, verify_token_hash: tokenHash, verify_sent_at: new Date().toISOString() });
       if (error) {
         console.error("lead insert failed", error.message);
         return NextResponse.json(
@@ -123,7 +132,16 @@ export async function POST(request: Request) {
     console.info("lead received (no store configured)", JSON.stringify(row));
   }
 
-  await notify(row);
+  // Double opt-in. The enquiry is stored either way, so nothing is lost if the
+  // confirmation is never clicked -- it simply shows as unconfirmed in the
+  // inbox, and the owner alert waits until the address is proven.
+  const verifyLink = `${site.url}/api/lead/verify?token=${token}`;
+  const mail = verificationEmail(row.name ?? "there", verifyLink);
+  const sent = row.email ? await sendEmail(row.email, mail.subject, mail.text) : false;
+
+  // With no mail provider configured there is nobody to confirm the address,
+  // so fall back to alerting immediately rather than sitting on the enquiry.
+  if (!sent) await notify(row);
 
   return NextResponse.json({ ok: true });
 }
