@@ -372,6 +372,107 @@ table.data-table tbody tr:last-child td {
   border-bottom: none;
 }
 
+/* --- Data tables on a phone ------------------------------------------------
+   A five- or seven-column record does not survive 360px. Either every cell
+   wraps to three or four lines and the row reads as a paragraph, or the table
+   scrolls sideways and the right-hand columns are simply never seen -- which
+   on the comparison table means the two vendors we are being compared against
+   are off screen, and that table has no point left.
+
+   So below md a `.stack` table stops being a grid and each row becomes a
+   record: one block per row, with the column header repeated as the label for
+   each value, taken from data-label. The cell that carries the row's identity
+   is marked data-stack-title and heads the block instead of taking a label.
+
+   This trades the table's implicit semantics for those generated labels, which
+   browsers do expose to assistive technology, so each value is still announced
+   with the column it came from. A phone user navigating a seven-column grid
+   cell by cell was not getting the better deal. Two-column tables are left
+   alone -- they already fit. */
+@media (max-width: 47.9375rem) {
+  table.data-table.stack,
+  table.data-table.stack tbody,
+  table.data-table.stack tr,
+  table.data-table.stack td,
+  table.data-table.stack th[scope="row"] {
+    display: block;
+    width: auto;
+  }
+
+  /* Visually hidden, but still the accessible name for each column. */
+  table.data-table.stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  table.data-table.stack tr {
+    border-bottom: 1px solid var(--rule-strong);
+    padding: 0.875rem 0;
+  }
+
+  table.data-table.stack tr:last-child {
+    border-bottom: none;
+  }
+
+  table.data-table.stack td,
+  table.data-table.stack th[scope="row"] {
+    border: none;
+    padding: 0.1875rem 0;
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: baseline;
+    text-align: left;
+    white-space: normal;
+  }
+
+  table.data-table.stack td::before,
+  table.data-table.stack th[scope="row"]::before {
+    content: attr(data-label);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    letter-spacing: 0.03em;
+    color: var(--color-steel-500);
+  }
+
+  /* A chip is a grid item here, and a grid item stretches by default -- a
+     LOT chip would otherwise run the full width of the value column. */
+  table.data-table.stack td > .chip,
+  table.data-table.stack td > button {
+    justify-self: start;
+  }
+
+  /* The identity of the record: heads the block, no label, full width. */
+  table.data-table.stack td[data-stack-title],
+  table.data-table.stack th[data-stack-title] {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--color-line-050);
+  }
+
+  table.data-table.stack td[data-stack-title]::before,
+  table.data-table.stack th[data-stack-title]::before {
+    content: none;
+  }
+
+  /* A cell that spanned the whole row on desktop -- an expansion panel, say.
+     It keeps its own layout and takes no label. */
+  table.data-table.stack td[data-stack-full] {
+    display: block;
+    padding: 0;
+  }
+
+  table.data-table.stack td[data-stack-full]::before {
+    content: none;
+  }
+}
+
 /* --- Motion --------------------------------------------------------------- */
 
 /* Reveal on scroll. The end state is the default; JS removes the start offset.

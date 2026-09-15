@@ -188,7 +188,7 @@ function BlockView({ block }: { block: Block }) {
       return (
         <figure className="mb-8">
           <ScrollRegion label={block.caption} className="panel">
-            <table className="data-table">
+            <table className={`data-table${block.head.length > 2 ? " stack" : ""}`}>
               <caption className="sr-only">{block.caption}</caption>
               <thead>
                 <tr>
@@ -205,6 +205,9 @@ function BlockView({ block }: { block: Block }) {
                     {row.map((cell, ci) => (
                       <td
                         key={ci}
+                        {...(ci === 0
+                          ? { "data-stack-title": true }
+                          : { "data-label": block.head[ci] ?? "" })}
                         className={ci === 0 ? "text-line-050" : "text-steel-400"}
                       >
                         {cell}

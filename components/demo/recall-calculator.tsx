@@ -165,7 +165,7 @@ function Result({ result, qty }: { result: RecallResult; qty: string }) {
         label={`Units that consumed lot ${result.lot}`}
         className="max-h-96 overflow-y-auto"
       >
-        <table className="data-table">
+        <table className="data-table stack">
           <caption className="sr-only">Units that consumed lot {result.lot}</caption>
           <thead>
             <tr>
@@ -179,15 +179,15 @@ function Result({ result, qty }: { result: RecallResult; qty: string }) {
           <tbody>
             {result.affected.map((u) => (
               <tr key={u.uid}>
-                <td className="data">{u.serial}</td>
-                <td className="data text-steel-400">{u.jobCard}</td>
-                <td className="data whitespace-nowrap text-steel-400">{formatTime(u.builtAt)}</td>
-                <td>
+                <td data-stack-title className="data">{u.serial}</td>
+                <td data-label="Job card" className="data text-steel-400">{u.jobCard}</td>
+                <td data-label="Built" className="data whitespace-nowrap text-steel-400">{formatTime(u.builtAt)}</td>
+                <td data-label="State">
                   <span className={`chip ${u.state === "QUARANTINED" ? "chip-fail" : ""}`}>
                     {u.state}
                   </span>
                 </td>
-                <td className="text-steel-400">{u.customer}</td>
+                <td data-label="Customer" className="text-steel-400">{u.customer}</td>
               </tr>
             ))}
           </tbody>

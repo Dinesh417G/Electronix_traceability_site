@@ -228,7 +228,7 @@ export default function HomePage() {
           label="ElectronIx Trace compared with enterprise MES suites and local AIDC integrators"
           className="panel"
         >
-          <table className="data-table">
+          <table className="data-table stack">
             <caption className="sr-only">
               ElectronIx Trace compared with enterprise MES suites and local AIDC integrators
             </caption>
@@ -251,12 +251,16 @@ export default function HomePage() {
             <tbody>
               {COMPARISON_ROWS.map((row) => (
                 <tr key={row.criterion}>
-                  <th scope="row" className="!border-b !border-[var(--rule)] !py-3 text-left text-xs font-medium !text-steel-400">
+                  <th
+                    scope="row"
+                    data-stack-title
+                    className="!border-b !border-[var(--rule)] !py-3 text-left text-xs font-medium !text-steel-400"
+                  >
                     {row.criterion}
                   </th>
-                  <td className="text-xs leading-relaxed text-steel-400">{row.mes}</td>
-                  <td className="text-xs leading-relaxed text-steel-400">{row.aidc}</td>
-                  <td className="text-xs leading-relaxed text-line-050">{row.trace}</td>
+                  <td data-label="Enterprise MES" className="text-xs leading-relaxed text-steel-400">{row.mes}</td>
+                  <td data-label="AIDC integrator" className="text-xs leading-relaxed text-steel-400">{row.aidc}</td>
+                  <td data-label="ElectronIx Trace" className="text-xs leading-relaxed text-line-050">{row.trace}</td>
                 </tr>
               ))}
             </tbody>
@@ -346,9 +350,12 @@ export default function HomePage() {
                 ["Internet", "Not required, at any point"],
                 ["Updates", "Signed, atomic, auto rollback"],
               ].map(([k, v]) => (
-                <div key={k} className="flex flex-wrap justify-between gap-2 border-t border-[var(--rule)] pt-3">
+                <div
+                  key={k}
+                  className="border-t border-[var(--rule)] pt-3 sm:flex sm:items-baseline sm:justify-between sm:gap-4"
+                >
                   <dt className="text-steel-600">{k}</dt>
-                  <dd className="data text-right">{v}</dd>
+                  <dd className="data mt-1 sm:mt-0 sm:text-right">{v}</dd>
                 </div>
               ))}
             </dl>

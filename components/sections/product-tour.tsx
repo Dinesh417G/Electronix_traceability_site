@@ -105,9 +105,9 @@ function UnitSearch() {
             ["Job card", u.jobCard],
             ["State", u.state],
           ].map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-3">
+            <div key={k} className="flex flex-wrap items-baseline justify-between gap-x-3">
               <dt className="text-steel-600">{k}</dt>
-              <dd className="data">{v}</dd>
+              <dd className="data ml-auto">{v}</dd>
             </div>
           ))}
         </dl>
@@ -141,7 +141,7 @@ function LineStatus() {
   ];
   return (
     <ScrollRegion label="Line status by station">
-      <table className="data-table">
+      <table className="data-table stack">
         <caption className="sr-only">Line status by station</caption>
         <thead>
           <tr>
@@ -154,10 +154,10 @@ function LineStatus() {
         <tbody>
           {rows.map((r) => (
             <tr key={r.station}>
-              <td className="data">{r.station}</td>
-              <td className="data text-steel-400">{r.op}</td>
-              <td className="data">{r.unit}</td>
-              <td>
+              <td data-stack-title className="data">{r.station}</td>
+              <td data-label="Operation" className="data text-steel-400">{r.op}</td>
+              <td data-label="Unit" className="data">{r.unit}</td>
+              <td data-label="State">
                 <span className={`chip ${r.state === "BLOCKED" ? "chip-fail" : "chip-pass"}`}>
                   {r.state}
                 </span>
@@ -301,7 +301,7 @@ function LabelTemplates() {
   ];
   return (
     <ScrollRegion label="Label templates and their versions">
-      <table className="data-table">
+      <table className="data-table stack">
         <caption className="sr-only">Label templates and their versions</caption>
         <thead>
           <tr>
@@ -314,10 +314,10 @@ function LabelTemplates() {
         <tbody>
           {rows.map((r) => (
             <tr key={r.code}>
-              <td className="data">{r.code}</td>
-              <td className="text-steel-400">{r.name}</td>
-              <td className="data">v{r.version}</td>
-              <td className="data text-steel-400">{r.from}</td>
+              <td data-stack-title className="data">{r.code}</td>
+              <td data-label="Name" className="text-steel-400">{r.name}</td>
+              <td data-label="Version" className="data">v{r.version}</td>
+              <td data-label="From" className="data text-steel-400">{r.from}</td>
             </tr>
           ))}
         </tbody>
@@ -335,12 +335,12 @@ function StationSetup() {
   ];
   return (
     <ScrollRegion label="Route operations, gates and failure paths">
-      <table className="data-table">
+      <table className="data-table stack">
         <caption className="sr-only">Route operations, gates and failure paths</caption>
         <thead>
           <tr>
-            <th scope="col">Seq</th>
             <th scope="col">Operation</th>
+            <th scope="col">Seq</th>
             <th scope="col">Gates</th>
             <th scope="col">On failure</th>
           </tr>
@@ -348,10 +348,10 @@ function StationSetup() {
         <tbody>
           {ops.map((o) => (
             <tr key={o.seq}>
-              <td className="data text-signal">{o.seq}</td>
-              <td className="data">{o.name}</td>
-              <td className="data text-xs text-steel-400">{o.gates}</td>
-              <td className="data text-xs text-steel-400">{o.fail}</td>
+              <td data-stack-title className="data">{o.name}</td>
+              <td data-label="Seq" className="data text-signal">{o.seq}</td>
+              <td data-label="Gates" className="data text-xs text-steel-400">{o.gates}</td>
+              <td data-label="On failure" className="data text-xs text-steel-400">{o.fail}</td>
             </tr>
           ))}
         </tbody>
