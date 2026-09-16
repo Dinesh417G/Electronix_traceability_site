@@ -279,23 +279,29 @@ delete it if it becomes noise.
 Lighthouse desktop 100 / 100 / 96 / 100. Mobile 95–97 / **100** / 96 / 100.
 179 Playwright tests green. Zero axe violations, 34 routes × 2 viewports.
 
-**One gate not met: mobile LCP 2.4–2.8s against a 2.0s target.** FCP is 1.0–1.5s
-and nothing blocks rendering; the gap is the `h1` repainting when Space Grotesk
-loads. Only the display face is preloaded and its unused 700 weight is dropped —
-that was the available headroom without changing the brand. Full numbers and the
-three remaining options are in `docs/LOOP-LOG.md`. Do not claim this gate passes.
+**One gate still not met on the home page: mobile LCP.** Measured against the
+deployed site on 2026-09-16 (Lighthouse 13, mobile, three runs per page): `/`
+lands **2.0–2.4s** against the 2.0s target, while `/how-it-works` (1.8–2.1s) and
+`/industries/auto-components` (1.9–2.1s) meet it. The CDN was worth about half a
+second over the local numbers below.
+
+The LCP element is **not** the `h1` — Lighthouse names `p.prose-measure`, the
+lede paragraph, which is set in the sans face. Preloading that face was tried and
+measured: FCP improved ~300ms, LCP did not move, so it is not in the tree. Full
+numbers in `docs/LOOP-LOG.md`. Do not claim this gate passes on `/`.
 
 ---
 
 ## Known gaps
 
-- **`docs/COMPETITORS.md` is search-surface only.** The build environment's egress
-  proxy blocked every competitor domain. Anything unverified is marked
-  `[unverified]`. Re-run from an unrestricted network before trusting page-section
-  order or page-speed claims.
-- **The ElectronIx DNC site was not found**, so the palette comes from the
-  specified brand tokens rather than being sampled from the live sibling site.
-  Re-sample and reconcile before launch.
+- **`docs/COMPETITORS.md` was re-verified 2026-09-16** by direct fetch and
+  measured Lighthouse runs. Still unverified and marked as such: Gartner star
+  ratings, the $50k enterprise price point, EduTech (no domain identified), and
+  `genefied.in` / `perteck.com`, which did not respond.
+- **The ElectronIx DNC site was found and sampled** (`electronix.co.in`,
+  2026-09-16). The two systems already agree; two brand-level deltas — accent hue
+  `#f97316` vs `#ff6b1a`, and Inter vs Geist for body copy — are the owner's call
+  and are laid out in `docs/DECISIONS.md` D-011.
 - **No Lighthouse CI config committed.** Runs were driven manually.
 - **No real proof point exists for Trace.** Every honest weakness in
   `COMPETITORS.md` is a variant of "nobody has run this yet."

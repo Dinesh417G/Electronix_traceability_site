@@ -14,10 +14,14 @@ import { Analytics } from "@/components/analytics";
 import { themeInitScript } from "@/components/theme-toggle";
 import "./globals.css";
 
-// Only the display face is preloaded: it renders the h1, which is the largest
-// contentful paint on every page. Preloading all three families put ~88 KB of
-// fonts on the critical path and pushed mobile LCP out by more than a second,
-// for two faces that style text the visitor reads second.
+// Only the display face is preloaded. Preloading all three families put ~88 KB
+// of fonts on the critical path and pushed mobile LCP out by more than a second.
+// Measured against the deployed site on 2026-09-16, the LCP element is not the
+// h1 but the lede paragraph below it, which is set in `sans`. Preloading `sans`
+// as well was tried and measured: mobile FCP improved ~300ms, LCP did not move
+// at all (2.95s median either way, four runs each). It is left off because it
+// buys nothing on the gate that is failing and costs ~50 KB of critical path.
+// Numbers in docs/LOOP-LOG.md.
 const display = Space_Grotesk({
   subsets: ["latin"],
   weight: ["600"],
