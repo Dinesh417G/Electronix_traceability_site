@@ -98,20 +98,20 @@ export default async function ComparisonPage({ params }: { params: Promise<{ slu
 
       <section className="shell mt-14">
         <div className="panel p-6 md:p-8">
-          <h2 className="data text-[0.6875rem] tracking-wide text-steel-600">THE VERDICT</h2>
+          <h2 className="data text-[0.6875rem] tracking-wide text-steel-600">The verdict</h2>
           <p className="prose-measure mt-4 text-base leading-relaxed text-line-050">
             {c.verdict}
           </p>
           <div className="mt-8 grid gap-px bg-[var(--rule)] sm:grid-cols-2">
             <div className="bg-graphite-850 p-5">
               <h3 className="data text-[0.625rem] tracking-wide text-steel-600">
-                CHOOSE {c.competitor.toUpperCase()} IF
+                Choose {c.competitor} if
               </h3>
               <p className="mt-2.5 text-sm leading-relaxed text-steel-400">{c.chooseThem}</p>
             </div>
             <div className="bg-graphite-850 p-5">
               <h3 className="data text-[0.625rem] tracking-wide text-signal">
-                CHOOSE ELECTRONIX TRACE IF
+                Choose ElectronIx Trace if
               </h3>
               <p className="mt-2.5 text-sm leading-relaxed text-line-050">{c.chooseUs}</p>
             </div>

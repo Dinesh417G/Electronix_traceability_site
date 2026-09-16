@@ -22,6 +22,11 @@ create table if not exists public.trace_leads (
     utm_campaign  text,
     referrer      text,
 
+    -- Names the product this enquiry is for. The ElectronIx DNC site writes
+    -- its own enquiries into quote_requests in this same project; this column
+    -- is what tells the two apart in the customer_requests view.
+    product       text not null default 'ElectronIx Trace',
+
     constraint trace_leads_name_len    check (char_length(name) between 2 and 120),
     constraint trace_leads_company_len check (char_length(company) between 2 and 160),
     constraint trace_leads_email_len   check (char_length(email) between 5 and 160),

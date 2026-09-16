@@ -203,10 +203,74 @@ for the same page, so roughly ±0.4s of this is sandbox noise.
 
 ## Known gaps beyond the gates
 
-- **Competitor research is search-surface only.** The egress proxy blocked every
-  competitor domain. `COMPETITORS.md` marks what is unverified; re-run it from an
-  unrestricted network before treating page section order or page speed as fact.
-- **The ElectronIx DNC site was not found**, so the brand system comes from the
-  specified tokens rather than being sampled from the live sibling site.
+- ~~**Competitor research is search-surface only.**~~ Re-run from an unrestricted
+  network on 2026-09-16; see `COMPETITORS.md`, which now marks what was verified
+  directly and what was corrected.
+- ~~**The ElectronIx DNC site was not found.**~~ Sampled 2026-09-16; the
+  reconciliation is `DECISIONS.md` D-011.
 - **No Lighthouse CI config is committed.** Runs were driven directly. If you want
   this in CI, `@lhci/cli` with these gates is the obvious next step.
+
+---
+
+## Post-deployment measurement — 2026-09-16
+
+The numbers above were taken against `next start` on a laptop. The site has been
+live on Vercel since 2026-09-15, so the LCP question could finally be answered
+the way option 3 asked for: by measuring the deployed thing rather than arguing
+about it. Lighthouse 13.4.1, mobile preset, three runs per page, against
+`https://electronix-trace-site.vercel.app`.
+
+| Page | P | FCP | LCP | SI | TBT | CLS |
+|---|---|---|---|---|---|---|
+| `/` | 97–98 | 1.5–1.7s | **2.0 / 2.4 / 2.4s** | 1.5–2.6s | 10–30ms | 0 |
+| `/how-it-works` | 99–100 | 0.9–1.2s | **1.9 / 2.1 / 1.8s** | 0.9–1.2s | 10–30ms | 0 |
+| `/industries/auto-components` | 99 | 1.1–1.2s | **2.0 / 1.9 / 2.1s** | 1.1–1.3s | 10–20ms | 0 |
+
+**The gate now passes on interior pages and is marginal on the home page.**
+Interior routes land 1.8–2.1s against the 2.0s target; `/` lands 2.0–2.4s. The
+CDN was worth roughly half a second, which is what option 3 predicted and did
+not have the right to assert. CLS is 0 on every run and TBT is a third of what
+the local runs showed.
+
+### The diagnosis in the section above is wrong
+
+That section blames the `h1` repainting when Space Grotesk loads. Lighthouse 13
+names the LCP element, and on every run of every page it is **not the `h1`** —
+it is the lede paragraph under it (`p.prose-measure`), which is set in `sans`
+(Geist), not in the display face. `font-display-insight` scores 1: no font is
+blocking text. The LCP subparts are TTFB 120ms plus element render delay
+(143ms–1.3s, the variance being what the ±0.4s of run noise actually is).
+
+So the font-swap story survives only in a modified form: the element that
+repaints is body copy, not the headline, which makes option 1 — setting the `h1`
+in a system stack — pointless. It would trade the brand's most visible
+expression for nothing measurable.
+
+### Preloading the sans face: tried, measured, rejected
+
+If the LCP element is set in `sans`, the obvious move is to preload `sans` too.
+Measured locally, four runs each on the identical build:
+
+| | FCP median | LCP median | LCP range | Perf |
+|---|---|---|---|---|
+| `sans` not preloaded (shipped) | 1659ms | **2945ms** | 2925–2965 | 94 |
+| `sans` preloaded | 1360ms | **2953ms** | 2944–3107 | 94–95 |
+
+FCP improves by ~300ms; **LCP does not move at all.** The change is not in the
+tree: ~50 KB of extra critical-path font for no movement on the failing gate is
+the wrong trade to make silently, and it is the reverse of the decision recorded
+above. If the owner wants the FCP, it is a one-line change in `app/layout.tsx`
+and the comment there says so.
+
+### What is left, if the home page's 2.4s matters
+
+`render-blocking-insight` scores 0 on every page: one stylesheet,
+`_next/static/immutable/chunks/*.css`, 10.4 KB, costing ~150ms. That is the only
+remaining lever the build owns, and inlining critical CSS in the App Router is
+not a one-line change. Everything else — TTFB 120ms, no long chains, modern HTTP,
+no unused JS worth naming — is already where it should be.
+
+Field data (CrUX) will say more than any of this once traffic exists. There is
+none yet: the PageSpeed Insights API returns no `loadingExperience` for the
+origin.

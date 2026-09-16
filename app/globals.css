@@ -1,10 +1,81 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   Design tokens. Graphite base, signal orange accent, green and red reserved
-   for verdict states so colour carries meaning rather than decoration.
+   Design tokens.
+
+   The palette names are ROLES, not literal colours, and that is what makes two
+   themes possible without touching a single utility class:
+
+     graphite-*   surface scale, darkest page ground to lightest raised panel
+     steel-*      muted text scale, dimmest to brightest
+     line-050     primary text
+     signal       the accent, wherever it is TEXT or a meaningful border
+     signal-solid the accent as a FILL, which stays brand orange in both themes
+     verify/reject verdict states, so colour carries meaning not decoration
+
+   Every one of those is used in exactly one role across the codebase (checked:
+   the graphite scale only ever appears as `bg-`, and the steel scale and
+   line-050 only as `text-`), so
+   redefining the variables per theme below re-skins the whole site. Tailwind v4
+   compiles utilities to `var(--color-…)`, which is what lets this work at all.
+
+   `signal` and `signal-solid` are a deliberate pair. Brand orange on white is
+   2.87:1 — it cannot be text in a light theme. So `signal` darkens for light
+   mode and `signal-solid` does not, because a solid orange button reads its
+   label against the orange, not against the page.
+
+   The values here are the light theme, which is the default. `[data-theme]`
+   blocks below re-point them. Measure with `node scripts/contrast.mjs` before
+   changing any of them.
    --------------------------------------------------------------------------- */
 @theme {
+  --color-graphite-950: #ffffff;
+  --color-graphite-900: #f6f7f9;
+  --color-graphite-850: #eef0f4;
+  --color-graphite-800: #e9ecf0;
+  --color-graphite-700: #d3d8e0;
+  --color-steel-600: #59616f;
+  --color-steel-500: #49525f;
+  --color-steel-400: #39414f;
+  --color-line-050: #12161c;
+  --color-signal: #9e3d0b;
+  --color-signal-solid: #ff6b1a;
+  --color-signal-dim: #c2500f;
+  --color-verify: #0f6b33;
+  --color-reject: #b3201f;
+
+  --font-display:
+    var(--font-space-grotesk), "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", "Menlo", monospace;
+
+  --breakpoint-xs: 26rem;
+}
+
+/* --------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+  --page: var(--color-graphite-950);
+  --rule: color-mix(in oklab, var(--color-steel-500) 18%, transparent);
+
+  /* Opaque, not a mix of the text colour. `rule-strong` draws the border of
+     form inputs and secondary buttons, so it is a control boundary and owes
+     3:1 against every surface it lands on (WCAG 1.4.11). The old
+     `color-mix(steel-500 32%, transparent)` flattened to 2.6-2.9:1 on panels
+     in the dark theme — it passed the axe suite only because axe has no rule
+     for input borders. Measured in scripts/contrast.mjs. */
+  --rule-strong: #737c8a;
+}
+
+/* --- Dark theme ------------------------------------------------------------
+   Light is the default, so dark is the opt-in. These are the original values
+   the site shipped with, unchanged, except `rule-strong` which was raised to
+   clear the same 3:1 control-boundary gate the light theme has to clear.
+   --------------------------------------------------------------------------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
   --color-graphite-950: #0e1013;
   --color-graphite-900: #14171c;
   --color-graphite-850: #171b21;
@@ -18,21 +89,32 @@
   --color-signal-dim: #c2500f;
   --color-verify: #2ed47a;
   --color-reject: #ff4d4d;
-
-  --font-display: var(--font-space-grotesk), "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", "Menlo", monospace;
-
-  --breakpoint-xs: 26rem;
+  --rule-strong: #676f7c;
 }
 
-/* --------------------------------------------------------------------------- */
+/* The theme switch swaps these two icons. Doing it in CSS rather than in React
+   means the button renders identically on the server and after hydration, so
+   there is no mismatch and no first-paint flicker of the wrong icon. */
+:root[data-theme="dark"] .theme-icon-moon {
+  display: none;
+}
+:root:not([data-theme="dark"]) .theme-icon-sun {
+  display: none;
+}
 
-:root {
-  color-scheme: dark;
-  --page: var(--color-graphite-950);
-  --rule: color-mix(in oklab, var(--color-steel-500) 18%, transparent);
-  --rule-strong: color-mix(in oklab, var(--color-steel-500) 32%, transparent);
+/* A theme change repaints the entire page. Without this the swap is a hard cut
+   on every surface at once; with it the grounds cross-fade and the text does
+   not, which is the part that would otherwise smear. Suppressed for the first
+   paint (see `theme-ready`) so the initial render is not animated, and dropped
+   entirely under reduced motion by the global override below. */
+.theme-ready body,
+.theme-ready .panel,
+.theme-ready .panel-inset,
+.theme-ready header,
+.theme-ready [class*="bg-graphite"] {
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease;
 }
 
 html {
@@ -81,8 +163,8 @@ h4 {
 }
 
 ::selection {
-  background: var(--color-signal);
-  color: #0e1013;
+  background: var(--color-signal-solid);
+  color: #14100c;
 }
 
 /* --- Layout primitives ---------------------------------------------------- */
@@ -191,7 +273,7 @@ h4 {
 }
 
 .btn-primary {
-  background: var(--color-signal);
+  background: var(--color-signal-solid);
   color: #14100c;
   font-weight: 600;
 }
@@ -213,6 +295,41 @@ h4 {
 }
 .btn-ghost:hover {
   color: var(--color-line-050);
+}
+
+/* --- Form controls -------------------------------------------------------- */
+
+/* One definition for every text control. The border owes 3:1 as a control
+   boundary under WCAG 1.4.11, which is why it is --rule-strong and not --rule;
+   see the note on that token above. */
+.field {
+  width: 100%;
+  background: var(--color-graphite-950);
+  border: 1px solid var(--rule-strong);
+  padding: 0.6875rem 0.875rem;
+  /* 16px, not 14px: iOS Safari zooms the whole page when a focused control is
+     under 16px, which throws a phone visitor out of the form layout. */
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--color-line-050);
+  transition: border-color 140ms ease;
+}
+
+.field::placeholder {
+  color: var(--color-steel-600);
+}
+
+.field:hover {
+  border-color: var(--color-steel-400);
+}
+
+.field[aria-invalid="true"] {
+  border-color: var(--color-reject);
+}
+
+textarea.field {
+  resize: vertical;
+  min-height: 7rem;
 }
 
 /* --- Tables --------------------------------------------------------------- */
@@ -255,6 +372,107 @@ table.data-table tbody tr:last-child td {
   border-bottom: none;
 }
 
+/* --- Data tables on a phone ------------------------------------------------
+   A five- or seven-column record does not survive 360px. Either every cell
+   wraps to three or four lines and the row reads as a paragraph, or the table
+   scrolls sideways and the right-hand columns are simply never seen -- which
+   on the comparison table means the two vendors we are being compared against
+   are off screen, and that table has no point left.
+
+   So below md a `.stack` table stops being a grid and each row becomes a
+   record: one block per row, with the column header repeated as the label for
+   each value, taken from data-label. The cell that carries the row's identity
+   is marked data-stack-title and heads the block instead of taking a label.
+
+   This trades the table's implicit semantics for those generated labels, which
+   browsers do expose to assistive technology, so each value is still announced
+   with the column it came from. A phone user navigating a seven-column grid
+   cell by cell was not getting the better deal. Two-column tables are left
+   alone -- they already fit. */
+@media (max-width: 47.9375rem) {
+  table.data-table.stack,
+  table.data-table.stack tbody,
+  table.data-table.stack tr,
+  table.data-table.stack td,
+  table.data-table.stack th[scope="row"] {
+    display: block;
+    width: auto;
+  }
+
+  /* Visually hidden, but still the accessible name for each column. */
+  table.data-table.stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  table.data-table.stack tr {
+    border-bottom: 1px solid var(--rule-strong);
+    padding: 0.875rem 0;
+  }
+
+  table.data-table.stack tr:last-child {
+    border-bottom: none;
+  }
+
+  table.data-table.stack td,
+  table.data-table.stack th[scope="row"] {
+    border: none;
+    padding: 0.1875rem 0;
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: baseline;
+    text-align: left;
+    white-space: normal;
+  }
+
+  table.data-table.stack td::before,
+  table.data-table.stack th[scope="row"]::before {
+    content: attr(data-label);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    letter-spacing: 0.03em;
+    color: var(--color-steel-500);
+  }
+
+  /* A chip is a grid item here, and a grid item stretches by default -- a
+     LOT chip would otherwise run the full width of the value column. */
+  table.data-table.stack td > .chip,
+  table.data-table.stack td > button {
+    justify-self: start;
+  }
+
+  /* The identity of the record: heads the block, no label, full width. */
+  table.data-table.stack td[data-stack-title],
+  table.data-table.stack th[data-stack-title] {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--color-line-050);
+  }
+
+  table.data-table.stack td[data-stack-title]::before,
+  table.data-table.stack th[data-stack-title]::before {
+    content: none;
+  }
+
+  /* A cell that spanned the whole row on desktop -- an expansion panel, say.
+     It keeps its own layout and takes no label. */
+  table.data-table.stack td[data-stack-full] {
+    display: block;
+    padding: 0;
+  }
+
+  table.data-table.stack td[data-stack-full]::before {
+    content: none;
+  }
+}
+
 /* --- Motion --------------------------------------------------------------- */
 
 /* Reveal on scroll. The end state is the default; JS removes the start offset.
@@ -294,27 +512,724 @@ table.data-table tbody tr:last-child td {
   }
 }
 
-/* Hero mark sweep. Runs once, then rests. */
-@keyframes trace-sweep {
-  from {
-    transform: translateY(-110%);
-  }
-  to {
-    transform: translateY(110%);
+/* --- Hero: the station, on a loop ----------------------------------------
+
+   One part is indexed into the nest, clamped, marked, read, and its record
+   written; then it is released and the next one comes in. The cycle is 13s and
+   it repeats forever.
+
+   ONE MASTER TIMELINE. Every animated element shares the same 13s duration and
+   `infinite`, and carries its own phase in its keyframe percentages. It has to
+   work this way: `animation-delay` applies only to the first iteration, so a
+   staged sequence built from delays - which is what this was - cannot loop. On
+   the second pass every delay is already spent and the whole thing fires at
+   once. The percentages are generated, not hand-counted; the timeline they come
+   from is mirrored in `components/sections/hero-trace.tsx`.
+
+   Each cycle ends where it starts: the part off-frame left, the record cleared,
+   the head parked, the beam off. Any repositioning happens while the element is
+   at opacity 0, so the loop has no visible rewind.
+
+   REDUCED MOTION IS A SEPARATE PATH, not a squashed version of this one. The
+   global override collapses duration and delay to land a one-shot sequence on
+   its final frame - but the final frame of a LOOP is an empty stage. So the
+   rule below switches the animations off entirely, and every element's base
+   attributes are already the finished diagram: part seated, code marked, record
+   written. Motion is genuinely optional here, which is the promise.
+   --------------------------------------------------------------------------- */
+
+.station-anim {
+  animation-duration: 13000ms;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-fill-mode: none;
+
+  /* Start the loop 8s in, at the hold — the moment the record is complete.
+     A visitor who lands on the page sees the finished diagram immediately and
+     only then watches it explain itself, instead of staring at a half-empty
+     frame for six seconds while the first part is marked. A NEGATIVE delay
+     seeks into the timeline rather than postponing it, and every element shares
+     the same offset, so the cycle stays in sync and still loops forever. */
+  animation-delay: -8000ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Overrides the global `animation-duration: 0.001ms` for this subtree.
+     Without it a reduced-motion visitor lands on the 100% keyframe, which for a
+     loop is the moment before the next part arrives - a blank station. */
+  .station-anim {
+    animation: none !important;
   }
 }
 
-@keyframes trace-draw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes trace-fade-in {
-  from {
+/* Part indexes into the nest, is worked, and indexes out. The snap back to the
+   loading position happens while it is invisible, so the loop has no rewind */
+@keyframes st-part {
+  0% {
+    transform: translateX(-190px);
     opacity: 0;
   }
-  to {
+  1.538% {
+    transform: translateX(-190px);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  2.462% {
+    opacity: 1;
+  }
+  7.692% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  89.231% {
+    transform: translateX(0);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
+  }
+  96.154% {
+    transform: translateX(190px);
+    opacity: 0;
+  }
+  96.615% {
+    transform: translateX(-190px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-190px);
+    opacity: 0;
+  }
+}
+
+/* Pneumatic hold-down: extends onto the flange before the beam fires, retracts
+   before the part indexes out. Rests extended, because the resting diagram is a
+   clamped part. A rotating toggle clamp was tried first and read as a diagonal
+   slash across the workpiece at this size; a vertical rod reads instantly. */
+@keyframes st-clamp {
+  0% {
+    transform: translateY(-11px);
+  }
+  7.692% {
+    transform: translateY(-11px);
+    animation-timing-function: cubic-bezier(0.34, 1.3, 0.64, 1);
+  }
+  10.769% {
+    transform: translateY(0);
+  }
+  86.923% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  89.231% {
+    transform: translateY(-11px);
+  }
+  100% {
+    transform: translateY(-11px);
+  }
+}
+
+/* Marking head feeds down the Z axis to focus and returns to park */
+@keyframes st-head {
+  0% {
+    transform: translateY(0);
+  }
+  11.538% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  14.615% {
+    transform: translateY(16px);
+  }
+  31.923% {
+    transform: translateY(16px);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  35% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Beam fires only while the head is at focus. A laser at rest is off */
+@keyframes st-beam {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 0;
+  }
+  15.462% {
+    opacity: 1;
+  }
+  30.692% {
+    opacity: 1;
+  }
+  31.154% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Scan line: one hold per row, because a galvo indexes rather than sweeps */
+@keyframes st-scan {
+  15.385% {
+    transform: translateY(0px);
+    animation-timing-function: steps(1, end);
+  }
+  16.923% {
+    transform: translateY(4px);
+    animation-timing-function: steps(1, end);
+  }
+  18.462% {
+    transform: translateY(8px);
+    animation-timing-function: steps(1, end);
+  }
+  20% {
+    transform: translateY(12px);
+    animation-timing-function: steps(1, end);
+  }
+  21.538% {
+    transform: translateY(16px);
+    animation-timing-function: steps(1, end);
+  }
+  23.077% {
+    transform: translateY(20px);
+    animation-timing-function: steps(1, end);
+  }
+  24.615% {
+    transform: translateY(24px);
+    animation-timing-function: steps(1, end);
+  }
+  26.154% {
+    transform: translateY(28px);
+    animation-timing-function: steps(1, end);
+  }
+  27.692% {
+    transform: translateY(32px);
+    animation-timing-function: steps(1, end);
+  }
+  29.231% {
+    transform: translateY(36px);
+    animation-timing-function: steps(1, end);
+  }
+  30.769% {
+    transform: translateY(40px);
+  }
+}
+
+/* Focal spot tracks the row being written */
+@keyframes st-focus {
+  15.385% {
+    transform: translateY(0px);
+    animation-timing-function: steps(1, end);
+  }
+  16.923% {
+    transform: translateY(3.6px);
+    animation-timing-function: steps(1, end);
+  }
+  18.462% {
+    transform: translateY(7.2px);
+    animation-timing-function: steps(1, end);
+  }
+  20% {
+    transform: translateY(10.8px);
+    animation-timing-function: steps(1, end);
+  }
+  21.538% {
+    transform: translateY(14.4px);
+    animation-timing-function: steps(1, end);
+  }
+  23.077% {
+    transform: translateY(18px);
+    animation-timing-function: steps(1, end);
+  }
+  24.615% {
+    transform: translateY(21.6px);
+    animation-timing-function: steps(1, end);
+  }
+  26.154% {
+    transform: translateY(25.2px);
+    animation-timing-function: steps(1, end);
+  }
+  27.692% {
+    transform: translateY(28.8px);
+    animation-timing-function: steps(1, end);
+  }
+  29.231% {
+    transform: translateY(32.4px);
+    animation-timing-function: steps(1, end);
+  }
+  30.769% {
+    transform: translateY(36px);
+  }
+}
+
+/* Beam column reaches only as far as the row it is currently writing */
+@keyframes st-beamlen {
+  15.385% {
+    transform: scaleY(0.621);
+    animation-timing-function: steps(1, end);
+  }
+  16.923% {
+    transform: scaleY(0.6589);
+    animation-timing-function: steps(1, end);
+  }
+  18.462% {
+    transform: scaleY(0.6968);
+    animation-timing-function: steps(1, end);
+  }
+  20% {
+    transform: scaleY(0.7347);
+    animation-timing-function: steps(1, end);
+  }
+  21.538% {
+    transform: scaleY(0.7726);
+    animation-timing-function: steps(1, end);
+  }
+  23.077% {
+    transform: scaleY(0.8105);
+    animation-timing-function: steps(1, end);
+  }
+  24.615% {
+    transform: scaleY(0.8484);
+    animation-timing-function: steps(1, end);
+  }
+  26.154% {
+    transform: scaleY(0.8863);
+    animation-timing-function: steps(1, end);
+  }
+  27.692% {
+    transform: scaleY(0.9242);
+    animation-timing-function: steps(1, end);
+  }
+  29.231% {
+    transform: scaleY(0.9621);
+    animation-timing-function: steps(1, end);
+  }
+  30.769% {
+    transform: scaleY(1);
+  }
+}
+
+/* The un-marked surface, retreating one row at a time. Revealing the code with
+   a shrinking cover rather than a hundred per-cell delays keeps the entire
+   raster to a single animation */
+@keyframes st-cover {
+  0% {
+    transform: scaleY(1);
+  }
+  15.385% {
+    transform: scaleY(1);
+    animation-timing-function: steps(1, end);
+  }
+  16.923% {
+    transform: scaleY(0.9);
+    animation-timing-function: steps(1, end);
+  }
+  18.462% {
+    transform: scaleY(0.8);
+    animation-timing-function: steps(1, end);
+  }
+  20% {
+    transform: scaleY(0.7);
+    animation-timing-function: steps(1, end);
+  }
+  21.538% {
+    transform: scaleY(0.6);
+    animation-timing-function: steps(1, end);
+  }
+  23.077% {
+    transform: scaleY(0.5);
+    animation-timing-function: steps(1, end);
+  }
+  24.615% {
+    transform: scaleY(0.4);
+    animation-timing-function: steps(1, end);
+  }
+  26.154% {
+    transform: scaleY(0.3);
+    animation-timing-function: steps(1, end);
+  }
+  27.692% {
+    transform: scaleY(0.2);
+    animation-timing-function: steps(1, end);
+  }
+  29.231% {
+    transform: scaleY(0.1);
+    animation-timing-function: steps(1, end);
+  }
+  30.769% {
+    transform: scaleY(0);
+  }
+  96.154% {
+    transform: scaleY(0);
+  }
+  96.615% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+/* Ablation spatter, burst 1 */
+@keyframes st-spark-1 {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  17.692% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  18.615% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  20.923% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+/* Ablation spatter, burst 2 */
+@keyframes st-spark-2 {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  23.846% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  24.769% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  27.077% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+/* Reader illumination: on to acquire the code, off once it is graded */
+@keyframes st-readlight {
+  0% {
+    opacity: 0;
+  }
+  33.077% {
+    opacity: 0;
+  }
+  34.615% {
+    opacity: 1;
+  }
+  43.077% {
+    opacity: 1;
+  }
+  45.385% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Reader closes onto the code from oversize, then keeps watching the fixture */
+@keyframes st-reticle {
+  0% {
+    transform: scale(2.05);
+    opacity: 0;
+  }
+  33.846% {
+    transform: scale(2.05);
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  35.538% {
+    opacity: 1;
+  }
+  37.692% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  61.538% {
+    opacity: 1;
+  }
+  73.077% {
+    opacity: 0.45;
+  }
+  84.615% {
+    opacity: 1;
+  }
+  88.462% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.05);
+    opacity: 0;
+  }
+}
+
+/* Decode illumination: one frame, then the verdict */
+@keyframes st-flash {
+  0% {
+    opacity: 0;
+  }
+  38.077% {
+    opacity: 0;
+  }
+  39.038% {
+    opacity: 0.7;
+  }
+  40% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Grade tag */
+@keyframes st-tag {
+  0% {
+    opacity: 0;
+  }
+  40.769% {
+    opacity: 0;
+  }
+  43.077% {
+    opacity: 1;
+  }
+  84.615% {
+    opacity: 1;
+  }
+  88.462% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Link from the successful read to the record it resolves */
+@keyframes st-link {
+  0% {
+    stroke-dashoffset: 64;
+  }
+  43.077% {
+    stroke-dashoffset: 64;
+  }
+  45.769% {
+    stroke-dashoffset: 0;
+  }
+  84.615% {
+    stroke-dashoffset: 0;
+  }
+  88.462% {
+    stroke-dashoffset: 64;
+  }
+  100% {
+    stroke-dashoffset: 64;
+  }
+}
+
+/* The chain the record rows hang off */
+@keyframes st-spine {
+  0% {
+    stroke-dashoffset: 298;
+  }
+  45.385% {
+    stroke-dashoffset: 298;
+  }
+  48.462% {
+    stroke-dashoffset: 0;
+  }
+  84.615% {
+    stroke-dashoffset: 0;
+  }
+  88.462% {
+    stroke-dashoffset: 298;
+  }
+  100% {
+    stroke-dashoffset: 298;
+  }
+}
+
+/* Record group envelope */
+@keyframes st-record {
+  0% {
+    opacity: 0;
+  }
+  47.692% {
+    opacity: 0;
+  }
+  48.846% {
+    opacity: 1;
+  }
+  84.615% {
+    opacity: 1;
+  }
+  88.462% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Record writes itself in top-down, one hold per row */
+@keyframes st-reccover {
+  0% {
+    transform: scaleY(1);
+  }
+  47.692% {
+    transform: scaleY(1);
+    animation-timing-function: steps(1, end);
+  }
+  49.011% {
+    transform: scaleY(0.857);
+    animation-timing-function: steps(1, end);
+  }
+  50.33% {
+    transform: scaleY(0.714);
+    animation-timing-function: steps(1, end);
+  }
+  51.648% {
+    transform: scaleY(0.571);
+    animation-timing-function: steps(1, end);
+  }
+  52.967% {
+    transform: scaleY(0.429);
+    animation-timing-function: steps(1, end);
+  }
+  54.286% {
+    transform: scaleY(0.286);
+    animation-timing-function: steps(1, end);
+  }
+  55.604% {
+    transform: scaleY(0.143);
+    animation-timing-function: steps(1, end);
+  }
+  56.923% {
+    transform: scaleY(0);
+  }
+  88.462% {
+    transform: scaleY(0);
+  }
+  88.923% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+/* Intermediate torque sample 1 */
+@keyframes st-sample-1 {
+  0% {
+    opacity: 0;
+  }
+  53.077% {
+    opacity: 0;
+  }
+  53.308% {
+    opacity: 1;
+  }
+  54.385% {
+    opacity: 1;
+  }
+  54.615% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Intermediate torque sample 2 */
+@keyframes st-sample-2 {
+  0% {
+    opacity: 0;
+  }
+  54.615% {
+    opacity: 0;
+  }
+  54.846% {
+    opacity: 1;
+  }
+  55.923% {
+    opacity: 1;
+  }
+  56.154% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Intermediate torque sample 3 */
+@keyframes st-sample-3 {
+  0% {
+    opacity: 0;
+  }
+  56.154% {
+    opacity: 0;
+  }
+  56.385% {
+    opacity: 1;
+  }
+  57.462% {
+    opacity: 1;
+  }
+  57.692% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The latched reading. This is the value that rests, so it ends visible */
+@keyframes st-latched {
+  0% {
+    opacity: 0;
+  }
+  57.692% {
+    opacity: 0;
+  }
+  58.615% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* The gate the reading was judged against, shown once there is a reading */
+@keyframes st-limits {
+  0% {
+    opacity: 0;
+  }
+  59.231% {
+    opacity: 0;
+  }
+  60.769% {
+    opacity: 1;
+  }
+  100% {
     opacity: 1;
   }
 }
@@ -329,7 +1244,7 @@ table.data-table tbody tr:last-child td {
   left: 1rem;
   top: 1rem;
   padding: 0.75rem 1rem;
-  background: var(--color-signal);
+  background: var(--color-signal-solid);
   color: #14100c;
   font-weight: 600;
 }

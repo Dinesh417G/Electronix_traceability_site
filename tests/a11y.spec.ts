@@ -36,24 +36,43 @@ for (const route of PUBLIC_ROUTES) {
 
 test("reduced motion leaves every reveal element fully visible", async ({ page }) => {
   await page.goto("/");
-  const hidden = await page.locator(".reveal").evaluateAll((els) =>
-    els
-      .filter((el) => Number(getComputedStyle(el).opacity) < 0.99)
-      .map((el) => el.className),
-  );
-  expect(hidden, "reveal elements must not stay transparent under reduced motion").toEqual([]);
+  const hidden = await page
+    .locator(".reveal")
+    .evaluateAll((els) =>
+      els
+        .filter((el) => Number(getComputedStyle(el).opacity) < 0.99)
+        .map((el) => el.className),
+    );
+  expect(
+    hidden,
+    "reveal elements must not stay transparent under reduced motion",
+  ).toEqual([]);
 });
 
-test("the hero resolves to its full static state under reduced motion", async ({ page }) => {
+test("the hero resolves to its full static state under reduced motion", async ({
+  page,
+}) => {
   await page.goto("/");
 
   // Every node of the genealogy tree must be painted, not waiting on a delay.
-  const faded = await page.locator("svg g, svg path, svg rect").evaluateAll((els) =>
-    els
-      .filter((el) => Number(getComputedStyle(el).opacity) < 0.99)
-      .map((el) => el.tagName),
+  //
+  // `data-transient` marks the elements whose correct resting state is "off":
+  // the beam, the scan line, the ablation sparks, the firing indicator and the
+  // decode flash. A laser that is still lit once the part is marked would be
+  // the bug, not the fix, so those are excluded here — and only those. The
+  // threshold stays at full opacity for everything else, which is what actually
+  // catches an element left stranded mid-animation.
+  const faded = await page
+    .locator("svg g, svg path, svg rect, svg circle")
+    .evaluateAll((els) =>
+      els
+        .filter((el) => !el.closest("[data-transient]"))
+        .filter((el) => Number(getComputedStyle(el).opacity) < 0.99)
+        .map((el) => el.tagName),
+    );
+  expect(faded, "hero elements must not stay transparent under reduced motion").toEqual(
+    [],
   );
-  expect(faded, "hero elements must not stay transparent under reduced motion").toEqual([]);
 
   // And the labels the tree exists to show must actually be on the page.
   for (const text of ["JOB CARD", "OP 30 TORQUE", "DISPATCHED"]) {

@@ -17,7 +17,7 @@ tooling was connected to this session to check the accounts directly, and the
 environment's egress proxy blocks arbitrary domain fetches. So the brand system is
 built from the tokens specified in Phase 4 of the brief rather than sampled from
 the live sibling site. **Re-sample and reconcile before launch** if the DNC site
-exists.
+exists. *(Done 2026-09-16 — the site was found. See D-011.)*
 
 ## D-003 — The site presents the designed system, not only the shipped subset
 
@@ -96,3 +96,45 @@ case throughout, no ALL-CAPS eyebrows, no uniform card grid with one shadow, no
 gradient decoration, no arrows glued to links, no single accent-coloured word in a
 headline. The accent is reserved for interactive elements and verdict states, where
 it carries meaning.
+
+## D-011 — DNC site found and sampled; palette kept, one delta flagged
+
+D-002 recorded that the ElectronIx DNC site could not be found, so the brand
+system came from the brief's Phase 4 tokens rather than from the sibling site.
+The site is up at `electronix.co.in` and was sampled on 2026-09-16 from its
+compiled stylesheet (`/_next/static/chunks/27fdv4y7cwii5.css`):
+
+| DNC token | Value | Trace equivalent |
+|---|---|---|
+| `--color-accent` | `#f97316` | `--color-signal-solid` `#ff6b1a` |
+| `--color-accent-hover` | `#ea580c` | `.btn-primary:hover` `#ff7d36` |
+| `--color-graphite` | `#0f1318` | `--color-graphite-950` dark `#0e1013` |
+| `--color-surface` | `#161b22` | `--color-graphite-850` dark `#171b21` |
+| `--color-light` | `#f6f7f9` | `--color-graphite-900` light `#f6f7f9` |
+| `--color-muted` | `#64748b` | `--color-steel-500` `#9ba3af` dark / `#49525f` light |
+| `--color-live` | `#22c55e` | `--color-verify` `#2ed47a` dark / `#0f6b33` light |
+| `--font-display` | Space Grotesk | Space Grotesk |
+| `--font-mono` | JetBrains Mono | JetBrains Mono |
+| `--font-sans` | **Inter** | **Geist** |
+
+The two systems are the same system. Surfaces, the light ground, the verdict
+green and two of the three families already match to within a shade. Two deltas
+are real:
+
+1. **Accent hue.** `#f97316` and `#ff6b1a` are different values but, measured,
+   near-identical in luminance: 2.80:1 vs 2.85:1 on white, 6.65:1 vs 6.69:1 on
+   their respective dark grounds. Neither can be text on a light ground, so the
+   `signal` / `signal-solid` split this site already runs would be needed on DNC's
+   value too. Changing it is a brand call, not a technical one, so it is the
+   owner's — and it is a one-token change if they want the sibling's exact orange.
+2. **Sans family.** DNC sets body copy in Inter; Trace uses Geist. Both are
+   neutral grotesques at text sizes, and the visible family on a page — the
+   display face — is the same on both sites. Also the owner's call; also one line.
+
+Trace's steel scale is deliberately darker than DNC's `--color-muted`: `#64748b`
+measures 4.76:1 on white, which passes AA text but fails the 3:1 that
+`--rule-strong` owes as a border under WCAG 1.4.11. That difference stays.
+
+**Not changed unilaterally.** D-002's instruction was to re-sample and reconcile;
+the reconciliation is that nothing is broken and two brand-level choices are now
+visible enough to decide. Whichever way they go, run `npm run contrast` after.

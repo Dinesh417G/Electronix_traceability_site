@@ -39,7 +39,7 @@ export function RecallCalculator() {
               placeholder="GSK-2608-A14"
               autoComplete="off"
               spellCheck={false}
-              className="data w-full border border-[var(--rule-strong)] bg-graphite-950 px-3.5 py-3 text-line-050 placeholder:text-steel-600"
+              className="data field"
             />
           </div>
           <div>
@@ -54,7 +54,7 @@ export function RecallCalculator() {
               onChange={(e) => setQty(e.target.value)}
               placeholder="500"
               autoComplete="off"
-              className="data w-full border border-[var(--rule-strong)] bg-graphite-950 px-3.5 py-3 text-line-050 placeholder:text-steel-600"
+              className="data field"
             />
           </div>
           <button type="submit" className="btn btn-primary max-sm:w-full">
@@ -64,7 +64,7 @@ export function RecallCalculator() {
 
         <div className="mt-5">
           <p className="data mb-2.5 text-[0.625rem] tracking-wide text-steel-600">
-            LOTS IN THE SAMPLE DATASET
+            Lots in the sample dataset
           </p>
           <div className="flex flex-wrap gap-2">
             {knownLots.map((l) => (
@@ -165,7 +165,7 @@ function Result({ result, qty }: { result: RecallResult; qty: string }) {
         label={`Units that consumed lot ${result.lot}`}
         className="max-h-96 overflow-y-auto"
       >
-        <table className="data-table">
+        <table className="data-table stack">
           <caption className="sr-only">Units that consumed lot {result.lot}</caption>
           <thead>
             <tr>
@@ -179,15 +179,15 @@ function Result({ result, qty }: { result: RecallResult; qty: string }) {
           <tbody>
             {result.affected.map((u) => (
               <tr key={u.uid}>
-                <td className="data">{u.serial}</td>
-                <td className="data text-steel-400">{u.jobCard}</td>
-                <td className="data whitespace-nowrap text-steel-400">{formatTime(u.builtAt)}</td>
-                <td>
+                <td data-stack-title className="data">{u.serial}</td>
+                <td data-label="Job card" className="data text-steel-400">{u.jobCard}</td>
+                <td data-label="Built" className="data whitespace-nowrap text-steel-400">{formatTime(u.builtAt)}</td>
+                <td data-label="State">
                   <span className={`chip ${u.state === "QUARANTINED" ? "chip-fail" : ""}`}>
                     {u.state}
                   </span>
                 </td>
-                <td className="text-steel-400">{u.customer}</td>
+                <td data-label="Customer" className="text-steel-400">{u.customer}</td>
               </tr>
             ))}
           </tbody>

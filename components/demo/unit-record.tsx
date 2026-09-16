@@ -89,7 +89,7 @@ export function UnitRecord({ unit }: { unit: DemoUnit }) {
           </p>
         ) : (
           <ScrollRegion label={`Captured process values for unit ${unit.serial}`}>
-            <table className="data-table">
+            <table className="data-table stack">
               <caption className="sr-only">
                 Captured process values for unit {unit.serial}
               </caption>
@@ -128,12 +128,12 @@ export function UnitRecord({ unit }: { unit: DemoUnit }) {
       <div className="border-b border-[var(--rule)] p-5 md:p-6">
         <h4 className="mb-4 text-sm font-semibold">Components consumed</h4>
         <ScrollRegion label={`Components consumed by unit ${unit.serial}`}>
-          <table className="data-table">
+          <table className="data-table stack">
             <caption className="sr-only">Components consumed by unit {unit.serial}</caption>
             <thead>
               <tr>
-                <th scope="col">Depth</th>
                 <th scope="col">Item</th>
+                <th scope="col">Depth</th>
                 <th scope="col">Kind</th>
                 <th scope="col">Qty</th>
                 <th scope="col">Op</th>
@@ -142,13 +142,13 @@ export function UnitRecord({ unit }: { unit: DemoUnit }) {
             <tbody>
               {unit.components.map((c) => (
                 <tr key={`${c.partNo}-${c.operationSeq}-${c.depth}`}>
-                  <td className="data text-steel-500">{c.depth}</td>
-                  <td className="data">{c.item}</td>
-                  <td>
+                  <td data-stack-title className="data">{c.item}</td>
+                  <td data-label="Depth" className="data text-steel-500">{c.depth}</td>
+                  <td data-label="Kind">
                     <span className="chip">{c.kind}</span>
                   </td>
-                  <td className="data text-steel-400">{c.qty}</td>
-                  <td className="data text-steel-400">{c.operationSeq}</td>
+                  <td data-label="Qty" className="data text-steel-400">{c.qty}</td>
+                  <td data-label="Op" className="data text-steel-400">{c.operationSeq}</td>
                 </tr>
               ))}
             </tbody>
@@ -160,12 +160,12 @@ export function UnitRecord({ unit }: { unit: DemoUnit }) {
       <div className="p-5 md:p-6">
         <h4 className="mb-4 text-sm font-semibold">Event history</h4>
         <ScrollRegion label={`Event history for unit ${unit.serial}`}>
-          <table className="data-table">
+          <table className="data-table stack">
             <caption className="sr-only">Event history for unit {unit.serial}</caption>
             <thead>
               <tr>
-                <th scope="col">When</th>
                 <th scope="col">Event</th>
+                <th scope="col">When</th>
                 <th scope="col">Op</th>
                 <th scope="col">Station</th>
                 <th scope="col">Operator</th>
@@ -175,15 +175,15 @@ export function UnitRecord({ unit }: { unit: DemoUnit }) {
             <tbody>
               {unit.events.map((e) => (
                 <tr key={e.hash}>
-                  <td className="data whitespace-nowrap text-steel-400">{formatTime(e.recordedAt)}</td>
-                  <td>
+                  <td data-stack-title>
                     <span className="data">{e.kind}</span>
                     <span className="mt-1 block text-xs text-steel-500">{e.detail}</span>
                   </td>
-                  <td className="data text-steel-400">{e.operationSeq ?? "—"}</td>
-                  <td className="data text-steel-400">{e.station ?? "—"}</td>
-                  <td className="text-steel-400">{e.operator ?? "—"}</td>
-                  <td className="data text-xs text-steel-600">{e.hash}</td>
+                  <td data-label="When" className="data whitespace-nowrap text-steel-400">{formatTime(e.recordedAt)}</td>
+                  <td data-label="Op" className="data text-steel-400">{e.operationSeq ?? "—"}</td>
+                  <td data-label="Station" className="data text-steel-400">{e.station ?? "—"}</td>
+                  <td data-label="Operator" className="text-steel-400">{e.operator ?? "—"}</td>
+                  <td data-label="Chain hash" className="data text-xs break-all text-steel-600">{e.hash}</td>
                 </tr>
               ))}
             </tbody>
@@ -217,21 +217,24 @@ function MeasurementRow({
   return (
     <>
       <tr>
-        <td className="data">{m.label}</td>
-        <td className={`data font-medium ${m.verdict === "FAIL" ? "verdict-fail" : ""}`}>
+        <td data-stack-title className="data">{m.label}</td>
+        <td
+          data-label="Value"
+          className={`data font-medium ${m.verdict === "FAIL" ? "verdict-fail" : ""}`}
+        >
           {m.value}
         </td>
-        <td className="data text-steel-400">{limits}</td>
-        <td>
+        <td data-label="Limits" className="data text-steel-400">{limits}</td>
+        <td data-label="Verdict">
           <span className={`chip ${m.verdict === "PASS" ? "chip-pass" : "chip-fail"}`}>
             {m.verdict}
           </span>
         </td>
-        <td>
+        <td data-label="Source">
           <span className="chip">{m.source}</span>
         </td>
-        <td className="data whitespace-nowrap text-steel-400">{formatTime(m.recordedAt)}</td>
-        <td>
+        <td data-label="When" className="data whitespace-nowrap text-steel-400">{formatTime(m.recordedAt)}</td>
+        <td data-label="">
           <button
             type="button"
             onClick={onToggle}
@@ -244,7 +247,7 @@ function MeasurementRow({
       </tr>
       {open && (
         <tr>
-          <td colSpan={7} className="!border-b-0 bg-graphite-850 !p-0">
+          <td colSpan={7} data-stack-full className="!border-b-0 bg-graphite-850 !p-0">
             <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
               <RawField label="Raw device payload" value={m.rawPayload} />
               <RawField label="Device" value={m.device ?? "Manual entry, no device"} />
