@@ -4,7 +4,7 @@ Everything here is blocked on a credential or a dashboard that only you can
 reach. **None of it stops the site working.** Each item silently downgrades one
 feature until it is done, which is exactly why they are easy to lose.
 
-Last updated 2026-09-15.
+Last updated 2026-09-16.
 
 ---
 
@@ -92,9 +92,14 @@ for a noindex and it can go in until DNS is ready.
 
 ## Smaller, whenever
 
-- **`main` branch and a PR.** The repo's only branch is still
-  `claude/traceability-report-review-sqs75r`, which is also its default. A PR
-  needs a base different from its head, so `main` has to exist first.
+- ~~**`main` branch and a PR.**~~ Done 2026-09-16. `main` was created at the
+  initial commit and [PR #1](https://github.com/Dinesh417G/Electronix_traceability_site/pull/1)
+  is open against it. The **default branch is still
+  `claude/traceability-report-review-sqs75r`** and so is Vercel's production
+  branch — deliberately, so nothing about the live site moved. If you would
+  rather `main` were the trunk, say so: it means fast-forwarding `main` to the
+  branch head, switching the default on GitHub and the production branch on
+  Vercel, and closing the PR as merged-by-fast-forward.
 - **More admins.** Anyone reading enquiries needs a Supabase account and a row
   in `public.admins`. Only the service role can grant that, deliberately — give
   the email to whoever is working on the repo.
